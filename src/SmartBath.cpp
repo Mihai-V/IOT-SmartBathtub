@@ -11,11 +11,13 @@ typedef struct PipeState {
 } PipeState;
 
 // Water quality details that are received from the sensor and stored inside the class.
-// TODO: research on water quality parameters and their optimal values
 typedef struct WaterQuality
 {
-    // pH of water
-    float pH;
+    float pH; //6.5 - 8.5
+    float chlorides; //250 - 400 mg/l
+    float iron; //0.1 - 0.3 mg/l
+    float calcium; //100 - 180 mg/l
+    float color; //15 - 30
 } WaterQuality;
 
 // Singleton class 
