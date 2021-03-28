@@ -21,3 +21,4 @@
 # System Files
 .DS_Store
 Thumbs.db
+.vscode/settings.json

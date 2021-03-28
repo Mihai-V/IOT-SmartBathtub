@@ -57,6 +57,22 @@ public:
     PipeState getBathState() {
         return bathState;
     }
+
+    PipeState getShowerState() {
+        return showerState;
+    }
+
+    bool setBathState(PipeState state) {
+        // TODO: data validation
+        bathState = state;
+        return true;
+    }
+
+    bool setShowerState(PipeState state) {
+        // TODO: data validation
+        showerState = state;
+        return true;
+    }
 };
 
 SmartBath* SmartBath::instance = nullptr;

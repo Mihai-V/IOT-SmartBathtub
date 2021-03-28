@@ -49,17 +49,31 @@ private:
     void setupRoutes() {
         using namespace Rest;
         // Defining various endpoints
-        Routes::Get(router, "/bath/state", Routes::bind(&BathEndpoint::getBathState, this));
-        //Routes::Post(router, "/settings/:settingName/:value", Routes::bind(&BathEndpoint::setSetting, this));
-        //Routes::Get(router, "/settings/:settingName/", Routes::bind(&BathEndpoint::getSetting, this));
+        Routes::Get(router, "/:pipe/state", Routes::bind(&BathEndpoint::getPipeState, this));
+        Routes::Get(router, "/:pipe/off", Routes::bind(&BathEndpoint::setPipeStateOff, this));
+        Routes::Get(router, "/:pipe/on", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Get(router, "/:pipe/on/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Get(router, "/:pipe/on/:temperature/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
     }
 
-    
-    void getBathState(const Rest::Request& request, Http::ResponseWriter response) {
+    // Get the pipe state to on
+    void getPipeState(const Rest::Request& request, Http::ResponseWriter response) {
         Guard guard(bathLock);
+        auto pipe = request.param(":pipe").as<std::string>();
 
-        auto state = bath->getBathState();
-        auto m1 = MIME(Application, Json);
+        PipeState state;
+        if(pipe == "bath") {
+            state = bath->getBathState();
+        }
+        else if(pipe == "shower") {
+            state = bath->getShowerState();
+        }
+        else {
+            // Return error if pipe is not known
+            response.send(Http::Code::Bad_Request, "{\"error\": \"UNKNOWN_PIPE\"}", JSON_MIME);
+            return;
+        }
+
         // Response to be sent
         string stateResponse = "{\"isOn\": " + to_string(state.isOn);
         if(state.isOn) {
@@ -68,6 +82,82 @@ private:
         }
         stateResponse += "} ";
         response.send(Http::Code::Ok, stateResponse, JSON_MIME);
+    }
+
+    void setPipeStateOn(const Rest::Request& request, Http::ResponseWriter response) {
+        Guard guard(bathLock);
+        string pipe = request.param(":pipe").as<std::string>();
+        if(!(pipe == "bath" || pipe == "shower")) {
+            // Return error if pipe is not known
+            response.send(Http::Code::Bad_Request, "{\"error\": \"UNKNOWN_PIPE\"}", JSON_MIME);
+            return;
+        }
+
+        float temperature, debit;
+
+        // Try get temperature
+        try {
+            temperature = request.param(":temperature").as<float>();
+        } catch(std::runtime_error err) {
+            auto errorWhat = err.what();
+            if(strcmp(errorWhat, "Unknown parameter") == 0) { // If temperature is not set, set a default temperature
+                temperature = 20;
+            } else { // If there is another error, send Bad Request response
+                response.send(Http::Code::Bad_Request, "{\"error\": \"BAD_TEMPERATURE_FORMAT\"}", JSON_MIME);
+                return;
+            }
+        }
+
+        // Try get debit
+        try {
+            debit = request.param(":debit").as<float>();
+        } catch(std::runtime_error err) {
+            auto errorWhat = err.what();
+            if(strcmp(errorWhat, "Unknown parameter") == 0) { // If debit is not set, set a default debit
+                debit = 0.5;
+            } else { // If there is another error, send Bad Request response
+                response.send(Http::Code::Bad_Request, "{\"error\": \"BAD_DEBIT_FORMAT\"}", JSON_MIME);
+                return;
+            }
+        }
+
+        // Everything is OK from now on
+        PipeState state = { .isOn = true, .temperature = temperature, .debit = debit };
+        bool result;
+        if(pipe == "bath") {
+            result = bath->setBathState(state);
+        }
+        else if(pipe == "shower") {
+            result = bath->setShowerState(state);
+        }
+
+        if(result) { // If data is in allowed parameters
+            response.send(Http::Code::Ok);
+        } else {
+            response.send(Http::Code::Bad_Request, "{\"error\": \"INVALID_DATA\"}", JSON_MIME);
+        }
+    }
+
+    // Turn off the pipe
+    void setPipeStateOff(const Rest::Request& request, Http::ResponseWriter response) {
+        Guard guard(bathLock);
+        string pipe = request.param(":pipe").as<std::string>();
+        PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
+        bool result;
+        if(pipe == "bath") {
+            result = bath->setBathState(state);
+        }
+        else if(pipe == "shower") {
+            result = bath->setShowerState(state);
+        } else {
+            response.send(Http::Code::Bad_Request, "{\"error\": \"UNKNOWN_PIPE\"}", JSON_MIME);
+            return;
+        }
+        if(result) { // If pipe closed
+            response.send(Http::Code::Ok);
+        } else {
+            response.send(Http::Code::Internal_Server_Error);
+        }
     }
 
     // Create the lock which prevents concurrent editing of the same variable
