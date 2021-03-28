@@ -8,7 +8,7 @@ typedef struct PipeState {
     float temperature;
     // Specifies the debit (how much water is flowing through the pipe).
     float debit;
-} s;
+} PipeState;
 
 // Water quality details that are received from the sensor and stored inside the class.
 // TODO: research on water quality parameters and their optimal values
