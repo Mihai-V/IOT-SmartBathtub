@@ -61,7 +61,7 @@ private:
         showerState = { .isOn = false, .temperature = 0, .debit = 0, };
         bathState = { .isOn = false, .temperature = 0, .debit = 0, };
         // Start the thread running intervalCheck and move its reference to the class member
-        checkThread = std::move(std::thread([=]() { intervalCheck(this); return 1; }));
+        checkThread = std::move(std::thread(intervalCheck, this));
     }
 
     // Destructor of the SmartBath class
