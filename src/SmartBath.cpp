@@ -50,6 +50,8 @@ private:
     std::thread checkThread;
     // Variable to tell the intervalCheck function to stop its recursive calls and return.
     bool _running = true;
+    // Mutex to avoid concurrent reading/writing
+    std::mutex blockingMutex;
 
     // Singleton instance
     static SmartBath* instance;
@@ -72,9 +74,10 @@ private:
 
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
     static int intervalCheck(SmartBath* bath) {
-        // TODO: use a mutex to avoid concurrent reading / writing
         // Sleep one second
         sleep(1);
+        // Lock the mutex
+        bath->blockingMutex.lock();
         // Get the current water debit from each pipe
         float currentDebit = bath->showerState.debit + bath->bathState.debit;
 
@@ -100,8 +103,15 @@ private:
 
         // TODO: Check water quality
 
+
+        // Unlock the mutex
+        bath->blockingMutex.unlock();
+
+        // Check if lifecycle din't end, and if so call the function again
         if(bath->_running)
             return intervalCheck(bath);
+
+        // Else return so the thread will be joined in the destructor
         return 0;
     }
 
@@ -123,7 +133,9 @@ public:
 
     // Method to set water quality. Returns true if set was successful, false otherwise.
     bool setWaterQuality(WaterQuality waterQuality) {
+        blockingMutex.lock();
         this->waterQuality = waterQuality;
+        blockingMutex.unlock();
         return true;
     }
 
@@ -137,13 +149,17 @@ public:
 
     bool setBathState(PipeState state) {
         // TODO: data validation
+        blockingMutex.lock();
         bathState = state;
+        blockingMutex.unlock();
         return true;
     }
 
     bool setShowerState(PipeState state) {
         // TODO: data validation
+        blockingMutex.lock();
         showerState = state;
+        blockingMutex.unlock();
         return true;
     }
 };
