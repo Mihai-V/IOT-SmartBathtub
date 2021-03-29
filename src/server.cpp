@@ -40,6 +40,8 @@ public:
     // When signaled server shuts down
     void stop(){
         httpEndpoint->shutdown();
+        // Destroy the SmartBath instance to free up memory
+        SmartBath::destroyInstance();
     }
 
 private:
