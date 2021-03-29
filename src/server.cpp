@@ -125,19 +125,20 @@ private:
 
         // Everything is OK from now on
         PipeState state = { .isOn = true, .temperature = temperature, .debit = debit };
-        bool result;
-        if(pipe == "bath") {
-            result = bath->setBathState(state);
-        }
-        else if(pipe == "shower") {
-            result = bath->setShowerState(state);
+        try {
+            if(pipe == "bath") {
+                bath->setBathState(state);
+            }
+            else if(pipe == "shower") {
+                bath->setShowerState(state);
+            }
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+            return;
         }
 
-        if(result) { // If data is in allowed parameters
-            response.send(Http::Code::Ok);
-        } else {
-            response.send(Http::Code::Bad_Request, "{\"error\": \"INVALID_DATA\"}", JSON_MIME);
-        }
+        response.send(Http::Code::Ok);
     }
 
     // Turn off the pipe
@@ -145,21 +146,20 @@ private:
         Guard guard(bathLock);
         string pipe = request.param(":pipe").as<std::string>();
         PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
-        bool result;
-        if(pipe == "bath") {
-            result = bath->setBathState(state);
-        }
-        else if(pipe == "shower") {
-            result = bath->setShowerState(state);
-        } else {
-            response.send(Http::Code::Bad_Request, "{\"error\": \"UNKNOWN_PIPE\"}", JSON_MIME);
+        try {
+            if(pipe == "bath") {
+                bath->setBathState(state);
+            }
+            else if(pipe == "shower") {
+                bath->setShowerState(state);
+            }
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
             return;
         }
-        if(result) { // If pipe closed
-            response.send(Http::Code::Ok);
-        } else {
-            response.send(Http::Code::Internal_Server_Error);
-        }
+        
+        response.send(Http::Code::Ok);
     }
 
     // Create the lock which prevents concurrent editing of the same variable
