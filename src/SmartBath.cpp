@@ -43,7 +43,7 @@ private:
     float bathtubCurrentVolume = 0;
     // Bool variable representing the state of the bathtub stopper.
     // If it is unplugged (false), the water will drain. 
-    bool isOnWaterStopper = true;
+    bool isOnWaterStopper = false;
     
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
@@ -72,6 +72,7 @@ private:
 
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
     static int intervalCheck(SmartBath* bath) {
+        // TODO: use a mutex to avoid concurrent reading / writing
         // Sleep one second
         sleep(1);
         // Get the current water debit from each pipe
@@ -82,21 +83,26 @@ private:
         // If the stopper is not plugged, then substract the water that has drained
         if(!bath->isOnWaterStopper) {
             volume -= DRAIN_SPEED;
+            if(volume < 0) {
+                volume = 0;
+            }
         }
         // If the bathtub is filling up turn off the pipes
         if(volume >= bath->bathtubValume) {
-            bath->bathtubCurrentVolume = 300;
+            bath->bathtubCurrentVolume = bath->bathtubValume;
+            // Turn off pipes
             bath->showerState = { .isOn = false, .temperature = 0, .debit = 0, };
             bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
         } else {
             // else set the new volume
             bath->bathtubCurrentVolume = volume;
         }
+
+        // TODO: Check water quality
+
         if(bath->_running)
             return intervalCheck(bath);
         return 0;
-
-        // TODO: Check water quality
     }
 
 public:
@@ -111,12 +117,12 @@ public:
     static void destroyInstance() {
         if(instance) {
             delete instance; // Calls the destructor
+            instance = nullptr;
         }
     }
 
     // Method to set water quality. Returns true if set was successful, false otherwise.
     bool setWaterQuality(WaterQuality waterQuality) {
-        // TODO: Stop water flow when water quality is bad
         this->waterQuality = waterQuality;
         return true;
     }
