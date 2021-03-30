@@ -52,8 +52,6 @@ private:
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
     std::thread checkThread;
-    // Variable to tell the intervalCheck function to stop its recursive calls and return.
-    bool _running = true;
     // Mutex to avoid concurrent reading/writing
     std::mutex blockingMutex;
 
@@ -65,19 +63,23 @@ private:
         showerState = { .isOn = false, .temperature = 0, .debit = 0, };
         bathState = { .isOn = false, .temperature = 0, .debit = 0, };
         // Start the thread running intervalCheck and move its reference to the class member
-        checkThread = std::move(std::thread(intervalCheck, this));
+        // intervalCheck function will be given the address of the instance pointer
+        checkThread = std::move(std::thread(intervalCheck, &instance));
     }
 
     // Destructor of the SmartBath class
     ~SmartBath() {
-        // Set the running state to false, so intervalCheck function will return
-        this->_running = false;
         // Wait for the thread to join
         checkThread.join();
     }
 
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
-    static int intervalCheck(SmartBath* bath) {
+    static int intervalCheck(SmartBath** instance_ptr) {
+        SmartBath* bath = *instance_ptr;
+        // Check if lifecycle did end, and if so return
+        if(bath == nullptr) {
+            return 0;
+        }
         // Sleep one second
         sleep(1);
         // Lock the mutex
@@ -111,12 +113,8 @@ private:
         // Unlock the mutex
         bath->blockingMutex.unlock();
 
-        // Check if lifecycle din't end, and if so call the function again
-        if(bath->_running)
-            return intervalCheck(bath);
-
-        // Else return so the thread will be joined in the destructor
-        return 0;
+        // Call the function again
+        return intervalCheck(instance_ptr);
     }
 
 public:
@@ -130,8 +128,11 @@ public:
     // Static method to destroy the instance.
     static void destroyInstance() {
         if(instance) {
-            delete instance; // Calls the destructor
+            // Copy of the instance pointer. We need to set the instance pointer to null before calling the destructor,
+            // so that intervalCheck will stop its execution and we can join.
+            SmartBath* instanceAddress = instance;
             instance = nullptr;
+            delete instanceAddress; // Calls the destructor
         }
     }
 
