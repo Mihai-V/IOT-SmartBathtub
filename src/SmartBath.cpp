@@ -17,19 +17,19 @@ typedef struct PipeState {
     bool isOn;
     // Specifiers the temperature of the water flowing through te pipe,
     // If the pipe is off, the expected value should be 0.
-    float temperature;
+    double temperature;
     // Specifies the debit (how much water is flowing through the pipe).
-    float debit;
+    double debit;
 } PipeState;
 
 // Water quality details that are received from the sensor and stored inside the class.
 typedef struct WaterQuality
 {
-    float pH; //6.5 - 8.5
-    float chlorides; //250 - 400 mg/l
-    float iron; //0.1 - 0.3 mg/l
-    float calcium; //100 - 180 mg/l
-    float color; //15 - 30
+    double pH; //6.5 - 8.5
+    double chlorides; //250 - 400 mg/l
+    double iron; //0.1 - 0.3 mg/l
+    double calcium; //100 - 180 mg/l
+    double color; //15 - 30
 } WaterQuality;
 
 // Singleton class 
@@ -42,9 +42,9 @@ private:
     // Struct variable storing the actual state of the bath
     PipeState bathState;
     // Volume of bathtub in liters
-    const float bathtubValume = 300;
+    const double bathtubValume = 300;
     // Current Volume of the bathtub in liters. It is calculated by the intervalCheck function
-    float bathtubCurrentVolume = 0;
+    double bathtubCurrentVolume = 0;
     // Bool variable representing the state of the bathtub stopper.
     // If it is unplugged (false), the water will drain. 
     bool isOnWaterStopper = true;
@@ -85,9 +85,9 @@ private:
         // Lock the mutex
         bath->blockingMutex.lock();
         // Get the current water debit from each pipe
-        float currentDebit = bath->showerState.debit + bath->bathState.debit;
+        double currentDebit = bath->showerState.debit + bath->bathState.debit;
 
-        float volume = bath->bathtubCurrentVolume + currentDebit;
+        double volume = bath->bathtubCurrentVolume + currentDebit;
         std::cout << "Current volume: " << volume << " liters\n";
         // If the stopper is not plugged, then substract the water that has drained
         if(!bath->isOnWaterStopper) {

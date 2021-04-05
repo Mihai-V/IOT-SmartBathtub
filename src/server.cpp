@@ -95,11 +95,11 @@ private:
             return;
         }
 
-        float temperature, debit;
+        double temperature, debit;
 
         // Try get temperature
         try {
-            temperature = request.param(":temperature").as<float>();
+            temperature = request.param(":temperature").as<double>();
         } catch(std::runtime_error err) {
             auto errorWhat = err.what();
             if(strcmp(errorWhat, "Unknown parameter") == 0) { // If temperature is not set, set a default temperature
@@ -112,11 +112,11 @@ private:
 
         // Try get debit
         try {
-            debit = request.param(":debit").as<float>();
+            debit = request.param(":debit").as<double>();
         } catch(std::runtime_error err) {
             auto errorWhat = err.what();
             if(strcmp(errorWhat, "Unknown parameter") == 0) { // If debit is not set, set a default debit
-                debit = 0.5;
+                debit = 0.2;
             } else { // If there is another error, send Bad Request response
                 response.send(Http::Code::Bad_Request, "{\"error\": \"BAD_DEBIT_FORMAT\"}", JSON_MIME);
                 return;
