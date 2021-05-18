@@ -1,4 +1,5 @@
 #include "SmartBath.hpp"
+#include "util.cpp"
 using namespace std;
 
 
@@ -87,6 +88,7 @@ void SmartBath::destroyInstance() {
 bool SmartBath::setWaterQuality(WaterQuality waterQuality) {
     blockingMutex.lock();
     this->waterQuality = waterQuality;
+    this->isSetWaterQuality = true;
     blockingMutex.unlock();
     return true;
 }
@@ -146,8 +148,8 @@ void SmartBath::setShowerState(PipeState state) {
 
 
 int SmartBath::listenForDevices(SmartBath** instance_ptr) {
-    const vector<string> TOPICS { "temperature", "salt", "display", "command" };
-    const vector<int> QOS { 0, 0, 0, 1 };
+    const vector<string> TOPICS { "temperature", "waterQuality", "salt", "display", "command" };
+    const vector<int> QOS { 0, 0, 0, 0, 1 };
 
     SmartBath* bath = *instance_ptr;
 
@@ -174,6 +176,22 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
             if(!msg) break;
             if(msg->get_topic() == string("temperature")) {
                 bath->defaultTemperature = stod(msg->to_string());
+            } else if(msg->get_topic() == string("waterQuality")) {
+                try {
+                    string qualityString = msg->to_string();
+                    string delimiter(",");
+                    auto splitted = splitString(qualityString, delimiter);
+                    auto result = convertStringVector(splitted);
+                    WaterQuality waterQuality = {
+                        .pH = result[0],
+                        .chlorides = result[1],
+                        .iron = result[2],
+                        .calcium = result[3],
+                        .color = result[4]
+                    };
+                    bath->setWaterQuality(waterQuality);
+                } catch(char* err) { }
+
             } else if(msg->get_topic() == string("command")) {
                 if(msg->to_string() == string("stop")) {
                     break;
