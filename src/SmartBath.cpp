@@ -1,4 +1,6 @@
 #include <thread>
+#include "mqtt/client.h"
+using namespace std;
 
 // Maximum bath water debit measured in liters/secomd
 #define MAX_BATH_DEBIT .25
@@ -10,6 +12,9 @@
 #define MIN_WATER_TEMPERATURE 5
 // Maximum tempature of the water flowing through the pipe
 #define MAX_WATER_TEMPERATURE 50
+
+const string SERVER_ADDRESS	{ "tcp://localhost:1883" };
+const string CLIENT_ID		{ "smartbath" };
 
 // State of shower/bath
 typedef struct PipeState {
@@ -48,10 +53,13 @@ private:
     // Bool variable representing the state of the bathtub stopper.
     // If it is unplugged (false), the water will drain. 
     bool isOnWaterStopper = true;
+
+    double defaultTemperature = 20;
     
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
     std::thread checkThread;
+    std::thread roomTemperatureThread;
     // Mutex to avoid concurrent reading/writing
     std::mutex blockingMutex;
 
@@ -65,12 +73,15 @@ private:
         // Start the thread running intervalCheck and move its reference to the class member
         // intervalCheck function will be given the address of the instance pointer
         checkThread = std::move(std::thread(intervalCheck, &instance));
+        roomTemperatureThread = std::move(std::thread(listenForDevices, &instance));
     }
 
     // Destructor of the SmartBath class
     ~SmartBath() {
         // Wait for the thread to join
         checkThread.join();
+        sendStopCommand();
+        roomTemperatureThread.join();
     }
 
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
@@ -88,7 +99,7 @@ private:
         double currentDebit = bath->showerState.debit + bath->bathState.debit;
 
         double volume = bath->bathtubCurrentVolume + currentDebit;
-        std::cout << "Current volume: " << volume << " liters\n";
+        //std::cout << "Current volume: " << volume << " liters\n";
         // If the stopper is not plugged, then substract the water that has drained
         if(!bath->isOnWaterStopper) {
             volume -= DRAIN_SPEED;
@@ -116,6 +127,8 @@ private:
         // Call the function again
         return intervalCheck(instance_ptr);
     }
+    static int listenForDevices(SmartBath** instance_ptr);
+    static void sendStopCommand();
 
 public:
     // Static method for getting the singleton instance.
@@ -203,5 +216,70 @@ public:
 };
 
 SmartBath* SmartBath::instance = nullptr;
+
+int SmartBath::listenForDevices(SmartBath** instance_ptr) {
+    const vector<string> TOPICS { "temperature", "salt", "display", "command" };
+    const vector<int> QOS { 0, 0, 0, 1 };
+
+    SmartBath* bath = *instance_ptr;
+
+    mqtt::client cli(SERVER_ADDRESS, CLIENT_ID);
+
+	auto connOpts = mqtt::connect_options_builder()
+		.clean_session(false)
+		.finalize();
+
+	try {
+		cout << "Connecting to the MQTT server... " << flush;
+		mqtt::connect_response rsp = cli.connect(connOpts);
+		cout << "OK\n";
+
+		if (!rsp.is_session_present()) {
+			std::cout << "Subscribing to topics... " << std::flush;
+			cli.subscribe(TOPICS, QOS);
+			std::cout << "OK\n";
+		}
+
+
+		while (true) {
+            auto msg = cli.consume_message();
+            if(!msg) break;
+            if(msg->get_topic() == string("temperature")) {
+                bath->defaultTemperature = stod(msg->to_string());
+            } else if(msg->get_topic() == string("command")) {
+                if(msg->to_string() == string("stop")) {
+                    break;
+                }
+            }
+            cout << "[Received] " << msg->get_topic() << ": " << msg->to_string() << endl;
+		}
+
+		if (cli.is_connected()) {
+			cli.disconnect();
+		}
+        return 0;
+	} catch (const mqtt::exception& exc) {
+		cerr << "\n  " << exc << endl;
+		return 1;
+	}
+}
+
+void SmartBath::sendStopCommand() {
+    mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
+
+    mqtt::connect_options options;
+    options.set_keep_alive_interval(20);
+    options.set_clean_session(true);
+    client.connect(options);
+    const std::string TOPIC = "command";
+    const std::string PAYLOAD = "stop";
+    auto msg = mqtt::make_message(TOPIC, PAYLOAD);
+
+    // Publish it to the server
+    client.publish(msg);
+
+    // Disconnect
+    client.disconnect();
+}
 
 
