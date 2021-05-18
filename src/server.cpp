@@ -11,6 +11,7 @@
 
 #include <signal.h>
 
+#include "SmartBath.hpp"
 #include "SmartBath.cpp"
 
 using namespace std;
