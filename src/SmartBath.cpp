@@ -42,6 +42,7 @@ class SmartBath {
 private:
     // Water quality information
     WaterQuality waterQuality;
+    bool isSetWaterQuality = false;
     // Struct variable storing the actual state of the shower
     PipeState showerState;
     // Struct variable storing the actual state of the bath
@@ -59,7 +60,7 @@ private:
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
     std::thread checkThread;
-    std::thread roomTemperatureThread;
+    std::thread mqttThread;
     // Mutex to avoid concurrent reading/writing
     std::mutex blockingMutex;
 
@@ -73,7 +74,7 @@ private:
         // Start the thread running intervalCheck and move its reference to the class member
         // intervalCheck function will be given the address of the instance pointer
         checkThread = std::move(std::thread(intervalCheck, &instance));
-        roomTemperatureThread = std::move(std::thread(listenForDevices, &instance));
+        mqttThread = std::move(std::thread(listenForDevices, &instance));
     }
 
     // Destructor of the SmartBath class
@@ -81,7 +82,7 @@ private:
         // Wait for the thread to join
         checkThread.join();
         sendStopCommand();
-        roomTemperatureThread.join();
+        mqttThread.join();
     }
 
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
@@ -118,8 +119,11 @@ private:
             bath->bathtubCurrentVolume = volume;
         }
 
-        // TODO: Check water quality
-
+        if(bath->isSetWaterQuality && !SmartBath::checkWaterQuality(bath->waterQuality)) {
+            // Turn off pipes
+            bath->showerState = { .isOn = false, .temperature = 0, .debit = 0, };
+            bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+        }
 
         // Unlock the mutex
         bath->blockingMutex.unlock();
@@ -129,6 +133,7 @@ private:
     }
     static int listenForDevices(SmartBath** instance_ptr);
     static void sendStopCommand();
+    static bool checkWaterQuality(WaterQuality waterQuality);
 
 public:
     // Static method for getting the singleton instance.
@@ -282,4 +287,11 @@ void SmartBath::sendStopCommand() {
     client.disconnect();
 }
 
+bool SmartBath::checkWaterQuality(WaterQuality waterQuality) {
+    return (6.5 <= waterQuality.pH && waterQuality.pH <= 8.5)
+        && (250.0 <= waterQuality.chlorides && waterQuality.chlorides <= 400.0)
+        && (0.1 <= waterQuality.iron && waterQuality.iron <= 0.3)
+        && (100.0 <= waterQuality.calcium && waterQuality.calcium <= 180.0)
+        && (15.0 <= waterQuality.color && waterQuality.color <= 30.0);
+}
 
