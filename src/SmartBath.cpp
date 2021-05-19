@@ -147,6 +147,11 @@ void SmartBath::setShowerState(PipeState state) {
 }
 
 void SmartBath::setDefaultTemperature(double temperature) {
+    if(temperature < MIN_WATER_TEMPERATURE) {
+        temperature = MIN_WATER_TEMPERATURE;
+    } else if(temperature > MAX_WATER_TEMPERATURE) {
+        temperature = MAX_WATER_TEMPERATURE;
+    }
     blockingMutex.lock();
     defaultTemperature = temperature;
     blockingMutex.unlock();

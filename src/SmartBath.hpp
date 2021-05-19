@@ -101,5 +101,9 @@ public:
     // Throws runtime_error
     void setShowerState(PipeState state);
 
+    /** 
+     * Sets default temperature
+     * Temperature will be set to the min/max in the range if it exceeds it.
+    */
     void setDefaultTemperature(double temperature);
 };
