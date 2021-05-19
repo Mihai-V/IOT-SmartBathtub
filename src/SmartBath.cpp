@@ -146,6 +146,11 @@ void SmartBath::setShowerState(PipeState state) {
     blockingMutex.unlock();
 }
 
+void SmartBath::setDefaultTemperature(double temperature) {
+    blockingMutex.lock();
+    defaultTemperature = temperature;
+    blockingMutex.unlock();
+}
 
 int SmartBath::listenForDevices(SmartBath** instance_ptr) {
     const vector<string> TOPICS { "temperature", "waterQuality", "salt", "display", "command" };
@@ -175,7 +180,7 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
             auto msg = cli.consume_message();
             if(!msg) break;
             if(msg->get_topic() == string("temperature")) {
-                bath->defaultTemperature = stod(msg->to_string());
+                bath->setDefaultTemperature(stod(msg->to_string());
             } else if(msg->get_topic() == string("waterQuality")) {
                 try {
                     string qualityString = msg->to_string();

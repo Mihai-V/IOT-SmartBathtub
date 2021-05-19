@@ -100,4 +100,6 @@ public:
     // Set Shower State
     // Throws runtime_error
     void setShowerState(PipeState state);
+
+    void setDefaultTemperature(double temperature);
 };
