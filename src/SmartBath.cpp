@@ -185,7 +185,7 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
             auto msg = cli.consume_message();
             if(!msg) break;
             if(msg->get_topic() == string("temperature")) {
-                bath->setDefaultTemperature(stod(msg->to_string());
+                bath->setDefaultTemperature(stod(msg->to_string()));
             } else if(msg->get_topic() == string("waterQuality")) {
                 try {
                     string qualityString = msg->to_string();
