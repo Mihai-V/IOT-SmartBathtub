@@ -14,6 +14,8 @@ using namespace std;
 #define MIN_WATER_TEMPERATURE 5
 // Maximum tempature of the water flowing through the pipe
 #define MAX_WATER_TEMPERATURE 50
+// kg/l
+#define HUMAN_BODY_DENSITY 1.01
 
 const string SERVER_ADDRESS	{ MQTT_SERVER_ADDRESS };
 const string CLIENT_ID		{ MQTT_CLIENT_ID };
@@ -58,6 +60,12 @@ private:
     bool isOnWaterStopper = true;
 
     double defaultTemperature = 20;
+
+    // Specifies if bath filling target is set
+    bool isFillTargetSet = false;
+
+    // Specifies the target volume to fill the bathtub (in liters)
+    double fillTarget;
     
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
@@ -107,4 +115,12 @@ public:
      * Temperature will be set to the min/max in the range if it exceeds it.
     */
     void setDefaultTemperature(double temperature);
+
+    /** 
+     * Prepare the bath for a person with a certain weight
+     * Throws runtime_error if bath is in preparation or the weight is too high
+    */
+    void prepareBath(double weight, double temperature);
+
+    void prepareBath(double weight);
 };

@@ -61,6 +61,13 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
         bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
     }
 
+    // If target is reached turn off pipes
+    if(bath->isFillTargetSet && bath->fillTarget <= bath->bathtubCurrentVolume) {
+        bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+        bath->isFillTargetSet = false;
+        // TODO: notify with MQTT
+    }
+
     // Unlock the mutex
     bath->blockingMutex.unlock();
 
@@ -116,6 +123,7 @@ void SmartBath::setBathState(PipeState state) {
         if(state.temperature != 0 || state.debit != 0) {
             throw std::runtime_error("INVALID_DATA");
         }
+        isFillTargetSet = false; // Cancel filling target
     }
     
     // Change value if validation is successful
@@ -246,3 +254,24 @@ bool SmartBath::checkWaterQuality(WaterQuality waterQuality) {
         && (15.0 <= waterQuality.color && waterQuality.color <= 30.0);
 }
 
+void SmartBath::prepareBath(double weight, double temperature) {
+    if(isFillTargetSet) {
+        throw std::runtime_error("BATH_ALREADY_IN_PREPARATION");
+    }
+    double _fillTarget = weight * (1 / HUMAN_BODY_DENSITY);
+    if(_fillTarget > bathtubValume) {
+        throw std::runtime_error("You're too fat man...");
+    }
+    if(_fillTarget <= bathtubCurrentVolume) {
+        throw std::runtime_error("Already filled.");
+    }
+    blockingMutex.lock();
+    isFillTargetSet = true;
+    fillTarget = _fillTarget;
+    bathState = { .isOn = true, .temperature = temperature, .debit = MAX_BATH_DEBIT };
+    blockingMutex.unlock();
+}
+
+void SmartBath::prepareBath(double weight) {
+    prepareBath(weight, defaultTemperature);
+}
