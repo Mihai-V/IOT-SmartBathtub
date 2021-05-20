@@ -24,3 +24,4 @@ Thumbs.db
 
 # Frontend
 /frontend/node_modules
+frontend/.env
