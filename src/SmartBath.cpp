@@ -18,7 +18,6 @@ SmartBath::SmartBath() {
 SmartBath::~SmartBath() {
     // Wait for the thread to join
     checkThread.join();
-    sendStopCommand();
     mqttThread.join();
 }
 
@@ -88,6 +87,7 @@ void SmartBath::destroyInstance() {
         // so that intervalCheck will stop its execution and we can join.
         SmartBath* instanceAddress = instance;
         instance = nullptr;
+        sendStopCommand(instanceAddress);
         delete instanceAddress; // Calls the destructor
     }
 }
@@ -172,6 +172,7 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
     SmartBath* bath = *instance_ptr;
 
     mqtt::client cli(SERVER_ADDRESS, CLIENT_ID);
+    bath->mqtt_client = &cli;
 
 	auto connOpts = mqtt::connect_options_builder()
 		.clean_session(false)
@@ -228,22 +229,9 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
 	}
 }
 
-void SmartBath::sendStopCommand() {
-    mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
-
-    mqtt::connect_options options;
-    options.set_keep_alive_interval(20);
-    options.set_clean_session(true);
-    client.connect(options);
-    const std::string TOPIC = "command";
-    const std::string PAYLOAD = "stop";
-    auto msg = mqtt::make_message(TOPIC, PAYLOAD);
-
-    // Publish it to the server
-    client.publish(msg);
-
-    // Disconnect
-    client.disconnect();
+void SmartBath::sendStopCommand(SmartBath* bath) {
+    auto msg = mqtt::make_message("command", "stop");
+    bath->mqtt_client->publish(msg);
 }
 
 bool SmartBath::checkWaterQuality(WaterQuality waterQuality) {

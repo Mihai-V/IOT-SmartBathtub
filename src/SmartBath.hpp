@@ -66,6 +66,8 @@ private:
 
     // Specifies the target volume to fill the bathtub (in liters)
     double fillTarget;
+
+    mqtt::client *mqtt_client = nullptr;
     
     // Varible to store the thread that is running the intervalCheck function
     // It is needed by the destructor to join at lifecycle end.
@@ -86,7 +88,7 @@ private:
     // Threaded function that checks every second if the water quality is good and the bathtub didn't fill up.
     static int intervalCheck(SmartBath** instance_ptr);
     static int listenForDevices(SmartBath** instance_ptr);
-    static void sendStopCommand();
+    static void sendStopCommand(SmartBath* bath);
     static bool checkWaterQuality(WaterQuality waterQuality);
 
 public:
