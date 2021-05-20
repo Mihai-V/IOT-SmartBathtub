@@ -8,11 +8,9 @@
 #include <pistache/router.h>
 #include <pistache/endpoint.h>
 #include <pistache/common.h>
-
 #include <signal.h>
-
-#include "SmartBath.hpp"
 #include "SmartBath.cpp"
+#include "env.hpp"
 
 using namespace std;
 using namespace Pistache;
@@ -191,7 +189,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Set a port on which your server to communicate
-    Port port(9080);
+    Port port(HTTP_ENDPOINT_PORT);
 
     // Number of threads used by the server
     int thr = 2;

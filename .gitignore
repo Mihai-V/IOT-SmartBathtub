@@ -1,6 +1,9 @@
 # Compiled output
 /bin
 
+# Env
+/src/env.hpp
+
 # IDEs and editors
 /.idea
 .project
@@ -19,4 +22,5 @@
 Thumbs.db
 .vscode/settings.json
 
+# Frontend
 /frontend/node_modules

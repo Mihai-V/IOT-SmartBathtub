@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include "mqtt/client.h"
+#include "env.hpp"
 using namespace std;
 
 // Maximum bath water debit measured in liters/secomd
@@ -14,8 +15,8 @@ using namespace std;
 // Maximum tempature of the water flowing through the pipe
 #define MAX_WATER_TEMPERATURE 50
 
-const string SERVER_ADDRESS	{ "tcp://localhost:1883" };
-const string CLIENT_ID		{ "smartbath" };
+const string SERVER_ADDRESS	{ MQTT_SERVER_ADDRESS };
+const string CLIENT_ID		{ MQTT_CLIENT_ID };
 
 // State of shower/bath
 typedef struct PipeState {
