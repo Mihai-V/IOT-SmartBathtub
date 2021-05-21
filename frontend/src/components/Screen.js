@@ -9,9 +9,17 @@ import { getClient } from '../paho';
 const bathtubVolume = 300;
 const showerMaxDebit = 0.2;
 const bathMaxDebit = 0.25;
+const topic = 'screen';
 
 function Screen() {
     let [app, setApp] = useRecoilState(appState);
+    let [client, setClient] = useState(null);
+
+    const sendMessage = (messageText, messageTopic = topic) => {
+        let message = new window.Paho.MQTT.Message(messageText);
+        message.destinationName = messageTopic;
+        client.send(message);
+    }
 
     const handlePipePropChange = (pipeName, pipeProp, value) => {
         let newApp = copyObject(app);
@@ -24,18 +32,29 @@ function Screen() {
                 newApp[pipeName].isOn = true;
             }
         }
+        let messageText = `setPipe/${pipeName}/`;
+        if(newApp[pipeName].isOn) {
+            messageText += `on/${newApp[pipeName].debit}/${newApp[pipeName].temperature}`;
+        } else {
+            messageText += 'off';
+        }
+        sendMessage(messageText);
         setApp(newApp);
     }
 
     const togglePipe = (pipeName) => {
         let newApp = copyObject(app);
         newApp[pipeName].isOn = !app[pipeName].isOn;
+        let messageText = `setPipe/${pipeName}/`
         if(!newApp[pipeName].isOn) {
+            messageText += 'off';
             newApp[pipeName].debit = 0;
         } else {
             let maxDebit = (pipeName == 'shower') ? showerMaxDebit : (pipeName == 'bath') ? bathMaxDebit : 0;
             newApp[pipeName].debit = 0.1 * maxDebit;
+            messageText += `on/${newApp[pipeName].debit}`;
         }
+        sendMessage(messageText);
         setApp(newApp);
     }
 
@@ -48,6 +67,7 @@ function Screen() {
                     cli.subscribe("screen");
                 }});
             }
+            setClient(cli);
         });
     }, []);
 

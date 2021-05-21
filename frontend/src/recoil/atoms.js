@@ -5,12 +5,12 @@ export const appState = atom({
     default: {
         shower: {
             isOn: false,
-            temperature: null,
+            temperature: 20,
             debit: null
         },
         bath: {
             isOn: false,
-            temperature: null,
+            temperature: 20,
             debit: null
         },
         currentVolume: 0,
