@@ -20,6 +20,9 @@ function Screen() {
     const togglePipe = (pipeName) => {
         let newApp = copyObject(app);
         newApp[pipeName].isOn = !app[pipeName].isOn;
+        if(!newApp[pipeName].isOn) {
+            newApp[pipeName].debit = 0;
+        }
         setApp(newApp);
     }
 
@@ -45,7 +48,30 @@ function Screen() {
             case 'currentVolume':
                 setCurrentVolume(parseFloat(splitted[1]));
                 break;
+            // pipe/:pipeName/on/:debit/:temperature
+            // pipe/:pipeName/off
+            case 'pipe':
+                handlePipeEvent(splitted[1], splitted[2], splitted[3], splitted[4])
+                break;
         }
+    }
+
+    const handlePipeEvent = (pipeName, isOn, debit, temperature) => {
+        let newApp = copyObject(app);
+        if(isOn == 'on') {
+            newApp[pipeName] = {
+                isOn: true,
+                debit,
+                temperature
+            }
+        } else {
+            newApp[pipeName] = {
+                isOn: false,
+                debit: 0,
+                temperature: app[pipeName].temperature
+            }
+        }
+        setApp(newApp);
     }
 
     const setCurrentVolume = (volume) => {
