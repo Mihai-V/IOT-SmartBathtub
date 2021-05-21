@@ -99,5 +99,17 @@
 
 .footer-prop {
   text-align: center;
-  margin: 0 8px;
+  margin: 0 16px;
+}
+
+.footer-prop.good {
+  color: #689f38;
+}
+
+.footer-prop.bad {
+  color: #e53935;
+}
+
+.footer-prop .footer-prop-icon {
+  margin-bottom: 4px;
 }

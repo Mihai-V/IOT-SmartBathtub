@@ -1,7 +1,7 @@
 import { useRecoilState } from 'recoil';
 import { appState } from '../recoil/atoms';
 import './Screen.css';
-import { BarChart, Droplet, ThermometerHigh } from 'react-bootstrap-icons';
+import { BarChart, Droplet, Moisture, ThermometerHigh } from 'react-bootstrap-icons';
 import { bufferToString, copyObject, formatFloat } from '../util';
 import { useEffect, useState } from 'react';
 import { getClient } from '../paho';
@@ -66,6 +66,11 @@ function Screen() {
             case 'pipe':
                 handlePipeEvent(splitted[1], splitted[2], splitted[3], splitted[4])
                 break;
+            // waterQuality/0 (bad)
+            // waterQuality/1 (good)
+            case 'waterQuality':
+                handleWaterQualityEvent(splitted[1] == '1');
+                break;
         }
     }
 
@@ -84,6 +89,12 @@ function Screen() {
                 temperature: app[pipeName].temperature
             }
         }
+        setApp(newApp);
+    }
+
+    const handleWaterQualityEvent = (isGood) => {
+        let newApp = copyObject(app);
+        newApp.badWaterQuality = !isGood;
         setApp(newApp);
     }
 
@@ -192,6 +203,12 @@ function Screen() {
                 <div className="footer-prop">
                     <div className="footer-prop-icon"><BarChart/></div>
                     <div className="footer-prop-value">{ app.currentVolume } / { bathtubVolume }</div>
+                </div>
+                <div className={"footer-prop " + (app.badWaterQuality ? 'bad' : 'good')}>
+                    <div className="footer-prop-icon"><Moisture/></div>
+                    <div className="footer-prop-value">
+                        {app.badWaterQuality ? 'Bad' : 'Good'}
+                        </div>
                 </div>
             </div>
         </div>

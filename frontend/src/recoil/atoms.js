@@ -13,6 +13,7 @@ export const appState = atom({
             temperature: null,
             debit: null
         },
-        currentVolume: 0
+        currentVolume: 0,
+        badWaterQuality: false
     }
 })
