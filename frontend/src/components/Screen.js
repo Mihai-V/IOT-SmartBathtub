@@ -7,13 +7,23 @@ import { useEffect, useState } from 'react';
 import { getClient } from '../paho';
 
 const bathtubVolume = 300;
+const showerMaxDebit = 0.2;
+const bathMaxDebit = 0.25;
 
 function Screen() {
     let [app, setApp] = useRecoilState(appState);
 
     const handlePipePropChange = (pipeName, pipeProp, value) => {
         let newApp = copyObject(app);
-        newApp[pipeName][pipeProp] = parseFloat(value);
+        let parsedValue = parseFloat(value)
+        newApp[pipeName][pipeProp] = parsedValue;
+        if(pipeProp == 'debit') {
+            if(parsedValue == 0) {
+                newApp[pipeName].isOn = false;
+            } else {
+                newApp[pipeName].isOn = true;
+            }
+        }
         setApp(newApp);
     }
 
@@ -22,6 +32,9 @@ function Screen() {
         newApp[pipeName].isOn = !app[pipeName].isOn;
         if(!newApp[pipeName].isOn) {
             newApp[pipeName].debit = 0;
+        } else {
+            let maxDebit = (pipeName == 'shower') ? showerMaxDebit : (pipeName == 'bath') ? bathMaxDebit : 0;
+            newApp[pipeName].debit = 0.1 * maxDebit;
         }
         setApp(newApp);
     }
@@ -95,13 +108,15 @@ function Screen() {
                     <div className="pipe-props">
                         <div className="pipe-prop">
                             <input
-                                type="range" min="0" max="0.25" value={app.bath.debit || 0} step="0.01"
+                                type="range" min="0" max={bathMaxDebit} value={app.bath.debit || 0} step="0.01"
                                 onChange={(event) => handlePipePropChange('bath', 'debit', event.target.value)}/>
                             <div className="pipe-prop-def">
                                 <div className="pipe-prop-icon">
                                     <Droplet/>
                                 </div>
-                                <div className="pipe-prop-text">{formatFloat((app.bath.debit || 0) / 0.25 * 100, 0)}%</div>
+                                <div className="pipe-prop-text">
+                                    {formatFloat((app.bath.debit || 0) / bathMaxDebit * 100, 0)}%
+                                    </div>
                             </div>
                         </div>
                         
@@ -135,13 +150,15 @@ function Screen() {
                     <div className="pipe-props">
                         <div className="pipe-prop">
                             <input
-                                type="range" min="0" max="0.2" value={app.shower.debit || 0} step="0.01"
+                                type="range" min="0" max={showerMaxDebit} value={app.shower.debit || 0} step="0.01"
                                 onChange={(event) => handlePipePropChange('shower', 'debit', event.target.value)}/>
                             <div className="pipe-prop-def">
                                 <div className="pipe-prop-icon">
                                     <Droplet/>
                                 </div>
-                                <div className="pipe-prop-text">{formatFloat((app.shower.debit || 0) / 0.2 * 100, 0)}%</div>
+                                <div className="pipe-prop-text">
+                                    {formatFloat((app.shower.debit || 0) / showerMaxDebit * 100, 0)}%
+                                </div>
                             </div>
                         </div>
                         
