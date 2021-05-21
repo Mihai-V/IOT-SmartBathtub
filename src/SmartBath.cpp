@@ -197,6 +197,7 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
 		while (true) {
             auto msg = cli.consume_message();
             if(!msg) break;
+            cout << "[Received] " << msg->get_topic() << ": " << msg->to_string() << endl;
             if(msg->get_topic() == string("temperature")) {
                 bath->setDefaultTemperature(stod(msg->to_string()));
             } else if(msg->get_topic() == string("waterQuality")) {
@@ -213,14 +214,39 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
                         .color = result[4]
                     };
                     bath->setWaterQuality(waterQuality);
-                } catch(char* err) { }
-
+                } catch(...) { }
+            } else if(msg->get_topic() == string("display")) {
+                try {
+                    string qualityString = msg->to_string();
+                    string delimiter("/");
+                    auto splitted = splitString(qualityString, delimiter);
+                    cout << splitted[0];
+                    if(splitted[0] == string("setPipe")) {
+                        PipeState state;
+                        if(splitted[2] == string("on")) {
+                            double debit = stod(splitted[3]);
+                            double temperature = bath->defaultTemperature;
+                            if(splitted.size() > 4) {
+                                temperature = stod(splitted[4]);
+                            }
+                            state = { .isOn = true, .temperature = temperature, .debit = debit };
+                        } else if(splitted[2] == string("off")) {
+                            state = { .isOn = false, .temperature = 0, .debit = 0 };
+                        } else {
+                            throw;
+                        }
+                        if(splitted[1] == string("bath")) {
+                            bath->setBathState(state);
+                        } else if(splitted[1] == string("shower")) {
+                            bath->setShowerState(state);
+                        }
+                    }
+                } catch(...) { }
             } else if(msg->get_topic() == string("command")) {
                 if(msg->to_string() == string("stop")) {
                     break;
                 }
             }
-            cout << "[Received] " << msg->get_topic() << ": " << msg->to_string() << endl;
 		}
 
 		if (cli.is_connected()) {
