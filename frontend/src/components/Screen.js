@@ -2,10 +2,11 @@ import { useRecoilState } from 'recoil';
 import { appState } from '../recoil/atoms';
 import './Screen.css';
 import { Droplet, ThermometerHigh } from 'react-bootstrap-icons';
-import { copyObject, formatFloat } from '../util';
+import { bufferToString, copyObject, formatFloat } from '../util';
+import { useEffect, useState } from 'react';
+import { getClient } from '../paho';
 
 function Screen() {
-
     let [app, setApp] = useRecoilState(appState);
 
     const handlePipePropChange = (pipeName, pipeProp, value) => {
@@ -18,6 +19,29 @@ function Screen() {
         let newApp = copyObject(app);
         newApp[pipeName].isOn = !app[pipeName].isOn;
         setApp(newApp);
+    }
+
+    useEffect(() => {
+        getClient().then(cli => {
+            cli.onConnectionLost = onConnectionLost;
+            cli.onMessageArrived = onMessageArrived;
+            if(!cli.isConnected()) {
+                cli.connect({ onSuccess: () => {
+                    cli.subscribe("screen");
+                }});
+            }
+        });
+    }, []);
+
+    const onMessageArrived = (message) => {
+        let payload = bufferToString(message.payloadBytes);
+        let splitted = payload.split('/');
+        let resultType = splitted[0];
+        console.log(resultType);
+    }
+
+    const onConnectionLost = () => {
+        alert('Connection lost');
     }
 
     return (
