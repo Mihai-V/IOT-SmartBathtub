@@ -12,6 +12,7 @@ export const appState = atom({
             isOn: false,
             temperature: null,
             debit: null
-        }
+        },
+        currentVolume: 0
     }
 })

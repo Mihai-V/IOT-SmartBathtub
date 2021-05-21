@@ -90,3 +90,14 @@
   flex: 1;
   padding: 0 5px;
 }
+
+.Screen .footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.footer-prop {
+  text-align: center;
+  margin: 0 8px;
+}

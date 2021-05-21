@@ -1,10 +1,12 @@
 import { useRecoilState } from 'recoil';
 import { appState } from '../recoil/atoms';
 import './Screen.css';
-import { Droplet, ThermometerHigh } from 'react-bootstrap-icons';
+import { BarChart, Droplet, ThermometerHigh } from 'react-bootstrap-icons';
 import { bufferToString, copyObject, formatFloat } from '../util';
 import { useEffect, useState } from 'react';
 import { getClient } from '../paho';
+
+const bathtubVolume = 300;
 
 function Screen() {
     let [app, setApp] = useRecoilState(appState);
@@ -38,6 +40,18 @@ function Screen() {
         let splitted = payload.split('/');
         let resultType = splitted[0];
         console.log(resultType);
+        switch(resultType) {
+            // currentVolume/:volume
+            case 'currentVolume':
+                setCurrentVolume(parseFloat(splitted[1]));
+                break;
+        }
+    }
+
+    const setCurrentVolume = (volume) => {
+        let newApp = copyObject(app);
+        newApp.currentVolume = volume;
+        setApp(newApp);
     }
 
     const onConnectionLost = () => {
@@ -129,6 +143,12 @@ function Screen() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div className="footer">
+                <div className="footer-prop">
+                    <div className="footer-prop-icon"><BarChart/></div>
+                    <div className="footer-prop-value">{ app.currentVolume } / { bathtubVolume }</div>
                 </div>
             </div>
         </div>
