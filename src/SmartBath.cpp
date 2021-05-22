@@ -112,7 +112,7 @@ PipeState SmartBath::getShowerState() {
     return showerState;
 }
 
-void SmartBath::setBathState(PipeState state) {
+void SmartBath::_setBathState(PipeState state, bool lockMutex) {
     // Data validation
     if(state.isOn) { // State on
         // Exceeded debit
@@ -130,13 +130,21 @@ void SmartBath::setBathState(PipeState state) {
         isFillTargetSet = false; // Cancel filling target
     }
     
+    if(lockMutex) {
+        blockingMutex.lock();
+    }
     // Change value if validation is successful
-    blockingMutex.lock();
     bathState = state;
-    blockingMutex.unlock();
+    if(lockMutex) {
+        blockingMutex.unlock();
+    }
 }
 
-void SmartBath::setShowerState(PipeState state) {
+void SmartBath::setBathState(PipeState state) {
+    _setBathState(state, true);
+}
+
+void SmartBath::_setShowerState(PipeState state, bool lockMutex) {
     // Data validation
     if(state.isOn) { // State on
         // Exceeded debit
@@ -153,9 +161,17 @@ void SmartBath::setShowerState(PipeState state) {
         }
     }
 
-    blockingMutex.lock();
+    if(lockMutex) {
+        blockingMutex.lock();
+    }
     showerState = state;
-    blockingMutex.unlock();
+    if(lockMutex) {
+        blockingMutex.unlock();
+    }
+}
+
+void SmartBath::setShowerState(PipeState state) {
+    _setShowerState(state, true);
 }
 
 void SmartBath::setDefaultTemperature(double temperature) {
@@ -220,7 +236,6 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
                     string qualityString = msg->to_string();
                     string delimiter("/");
                     auto splitted = splitString(qualityString, delimiter);
-                    cout << splitted[0];
                     if(splitted[0] == string("setPipe")) {
                         PipeState state;
                         if(splitted[2] == string("on")) {
