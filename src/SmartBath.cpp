@@ -36,7 +36,7 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
 
     double volume = bath->bathtubCurrentVolume + currentDebit;
     std::cout << "Current volume: " << volume << " liters\n";
-    auto msg = mqtt::make_message("screen", "currentVolume/" + to_string(volume));
+    auto msg = mqtt::make_message("display", "currentVolume/" + to_string(volume));
     bath->mqtt_client->publish(msg);
     // If the stopper is not plugged, then substract the water that has drained
     if(!bath->isOnWaterStopper) {
@@ -67,7 +67,7 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
         bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
         bath->isFillTargetSet = false;
         // Notify with MQTT
-        auto msg = mqtt::make_message("screen", "targetReached");
+        auto msg = mqtt::make_message("display", "targetReached");
         bath->mqtt_client->publish(msg);
     }
 

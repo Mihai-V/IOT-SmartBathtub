@@ -9,7 +9,7 @@ import { getClient } from '../paho';
 const bathtubVolume = 300;
 const showerMaxDebit = 0.2;
 const bathMaxDebit = 0.25;
-const topic = 'screen';
+const topic = 'display';
 
 function Screen() {
     let [app, setApp] = useRecoilState(appState);
@@ -64,7 +64,7 @@ function Screen() {
             cli.onMessageArrived = onMessageArrived;
             if(!cli.isConnected()) {
                 cli.connect({ onSuccess: () => {
-                    cli.subscribe("screen");
+                    cli.subscribe(topic);
                 }});
             }
             setClient(cli);
