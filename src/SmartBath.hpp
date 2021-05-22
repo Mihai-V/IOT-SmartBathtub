@@ -91,6 +91,13 @@ private:
     static void sendStopCommand(SmartBath* bath);
     static bool checkWaterQuality(WaterQuality waterQuality);
 
+    // Internal private function that can set bath state without locking the mutex
+    void _setBathState(PipeState state, bool lockMutex = false);
+    // Internal private function that can set shower state without locking the mutex
+    void _setShowerState(PipeState state, bool lockMutex = false);
+    
+    void sendMessage(string topic, string message);
+
 public:
     // Static method for getting the singleton instance.
     static SmartBath* getInstance();
