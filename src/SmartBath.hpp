@@ -95,6 +95,8 @@ private:
     void _setBathState(PipeState state, bool lockMutex = false);
     // Internal private function that can set shower state without locking the mutex
     void _setShowerState(PipeState state, bool lockMutex = false);
+    
+    void sendMessage(string topic, string message);
 
 public:
     // Static method for getting the singleton instance.
