@@ -22,13 +22,13 @@ SmartBath::~SmartBath() {
 }
 
 int SmartBath::intervalCheck(SmartBath** instance_ptr) {
+    // Sleep one second
+    sleep(1);
     SmartBath* bath = *instance_ptr;
     // Check if lifecycle did end, and if so return
     if(bath == nullptr) {
         return 0;
     }
-    // Sleep one second
-    sleep(1);
     // Lock the mutex
     bath->blockingMutex.lock();
     // Get the current water debit from each pipe
