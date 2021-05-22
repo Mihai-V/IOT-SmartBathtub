@@ -22,40 +22,49 @@ function Screen() {
     }
 
     const handlePipePropChange = (pipeName, pipeProp, value) => {
-        let newApp = copyObject(app);
-        let parsedValue = parseFloat(value)
-        newApp[pipeName][pipeProp] = parsedValue;
-        if(pipeProp == 'debit') {
-            if(parsedValue == 0) {
-                newApp[pipeName].isOn = false;
-            } else {
-                newApp[pipeName].isOn = true;
+        let messageText;
+        setApp((oldApp) => {
+            let newApp = copyObject(oldApp);
+            let parsedValue = parseFloat(value)
+            newApp[pipeName][pipeProp] = parsedValue;
+            if(pipeProp == 'debit') {
+                if(parsedValue == 0) {
+                    newApp[pipeName].isOn = false;
+                } else {
+                    newApp[pipeName].isOn = true;
+                }
             }
-        }
-        let messageText = `setPipe/${pipeName}/`;
-        if(newApp[pipeName].isOn) {
-            messageText += `on/${newApp[pipeName].debit}/${newApp[pipeName].temperature}`;
-        } else {
-            messageText += 'off';
-        }
+            messageText = `setPipe/${pipeName}/`;
+            if(newApp[pipeName].isOn) {
+                messageText += `on/${newApp[pipeName].debit}/${newApp[pipeName].temperature}`;
+            } else {
+                messageText += 'off';
+            }
+            return newApp;
+        });
         sendMessage(messageText);
-        setApp(newApp);
     }
 
     const togglePipe = (pipeName) => {
-        let newApp = copyObject(app);
-        newApp[pipeName].isOn = !app[pipeName].isOn;
-        let messageText = `setPipe/${pipeName}/`
-        if(!newApp[pipeName].isOn) {
-            messageText += 'off';
-            newApp[pipeName].debit = 0;
-        } else {
-            let maxDebit = (pipeName == 'shower') ? showerMaxDebit : (pipeName == 'bath') ? bathMaxDebit : 0;
-            newApp[pipeName].debit = 0.1 * maxDebit;
-            messageText += `on/${newApp[pipeName].debit}`;
-        }
+        let messageText;
+        setApp((oldApp) => {
+            let newApp = copyObject(oldApp);
+            newApp[pipeName].isOn = !app[pipeName].isOn;
+            messageText = `setPipe/${pipeName}/`
+            if(!newApp[pipeName].isOn) {
+                messageText += 'off';
+                newApp[pipeName].debit = 0;
+            } else {
+                let maxDebit = (pipeName == 'shower') ? showerMaxDebit : (pipeName == 'bath') ? bathMaxDebit : 0;
+                newApp[pipeName].debit = 0.1 * maxDebit;
+                messageText += `on/${newApp[pipeName].debit}`;
+                if(newApp[pipeName].temperature) {
+                    messageText += `on/${newApp[pipeName].temperature}`;
+                }
+            }
+            return newApp;
+        });
         sendMessage(messageText);
-        setApp(newApp);
     }
 
     useEffect(() => {
@@ -95,36 +104,43 @@ function Screen() {
     }
 
     const handlePipeEvent = (pipeName, isOn, debit, temperature) => {
-        let newApp = copyObject(app);
-        if(isOn == 'on') {
-            newApp[pipeName] = {
-                isOn: true,
-                debit,
-                temperature
+        setApp((oldApp) => {
+            let newApp = copyObject(oldApp);
+            if(isOn == 'on') {
+                newApp[pipeName] = {
+                    isOn: true,
+                    debit,
+                    temperature
+                }
+            } else {
+                newApp[pipeName] = {
+                    isOn: false,
+                    debit: 0,
+                    temperature: oldApp[pipeName].temperature
+                }
             }
-        } else {
-            newApp[pipeName] = {
-                isOn: false,
-                debit: 0,
-                temperature: app[pipeName].temperature
-            }
-        }
-        setApp(newApp);
+            return newApp;
+        });
     }
 
     const handleWaterQualityEvent = (isGood) => {
-        let newApp = copyObject(app);
-        newApp.badWaterQuality = !isGood;
-        setApp(newApp);
+        setApp((oldApp) => {
+            let newApp = copyObject(oldApp);
+            newApp.badWaterQuality = !isGood;
+            return newApp;
+        });
     }
 
     const setCurrentVolume = (volume) => {
-        let newApp = copyObject(app);
-        newApp.currentVolume = volume;
-        setApp(newApp);
+        setApp((oldApp) => {
+            let newApp = copyObject(oldApp);
+            newApp.currentVolume = volume;
+            return newApp;
+        });
     }
 
-    const onConnectionLost = () => {
+    const onConnectionLost = (err) => {
+        console.log(err)
         alert('Connection lost');
     }
 
