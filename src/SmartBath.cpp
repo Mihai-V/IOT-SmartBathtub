@@ -1,5 +1,6 @@
 #include "SmartBath.hpp"
 #include "util.cpp"
+#include <fstream>
 using namespace std;
 
 
@@ -9,6 +10,8 @@ SmartBath::SmartBath() {
     // Initialize states
     showerState = { .isOn = false, .temperature = 0, .debit = 0, };
     bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+    // Load user profiles
+    loadProfiles();
     // Start the thread running intervalCheck and move its reference to the class member
     // intervalCheck function will be given the address of the instance pointer
     checkThread = std::move(std::thread(intervalCheck, &instance));
@@ -16,6 +19,8 @@ SmartBath::SmartBath() {
 }
 
 SmartBath::~SmartBath() {
+    // Dump the user profiles into the .csv file
+    dumpProfiles();
     // Wait for the thread to join
     checkThread.join();
     mqttThread.join();
@@ -338,3 +343,58 @@ void SmartBath::prepareBath(double weight, double temperature) {
 void SmartBath::prepareBath(double weight) {
     prepareBath(weight, defaultTemperature);
 }
+
+void SmartBath::loadProfiles() {
+    ifstream profileFile("profiles.csv");
+    string line;
+    string delimiter = ",";
+    while(getline(profileFile, line)) {
+        try {
+            auto splitted = splitString(line, delimiter);
+            if(splitted.size() != 4) throw "";
+            string name = splitted[0];
+            double weight = stod(splitted[1]);
+            double preferredBathTemperature = stod(splitted[2]);
+            double preferredShowerTemperature = stod(splitted[3]);
+            UserProfile profile = {
+                .name = name,
+                .weight = weight,
+                .preferredBathTemperature = preferredBathTemperature,
+                .preferredShowerTemperature = preferredShowerTemperature
+            };
+            profiles.insert({ name, profile });
+        } catch(...) {
+            cout << "Profiles file seems to be corrupted.\n";
+        }
+    }
+    profileFile.close();
+}
+
+void SmartBath::dumpProfiles() {
+    ofstream profileFile("profiles.csv");
+    for(auto itr = profiles.begin(); itr != profiles.end(); ++itr) {
+        profileFile << itr->first << "," 
+                    << itr->second.weight << ","
+                    << itr->second.preferredBathTemperature << ","
+                    << itr->second.preferredShowerTemperature
+                    << endl;
+    }
+    profileFile.close();
+}
+
+void SmartBath::addProfile(string name, UserProfile profile) {
+    if(profiles.find(name) != profiles.end()) {
+        throw "PROFILE_ALREADY_EXISTS";
+    }
+    if(!(MIN_WATER_TEMPERATURE <= profile.preferredBathTemperature && profile.preferredBathTemperature <= MAX_WATER_TEMPERATURE)) {
+        throw std::runtime_error("TEMPERATURE_NOT_IN_RANGE");
+    }
+    if(!(MIN_WATER_TEMPERATURE <= profile.preferredShowerTemperature && profile.preferredShowerTemperature <= MAX_WATER_TEMPERATURE)) {
+        throw std::runtime_error("TEMPERATURE_NOT_IN_RANGE");
+    }
+    if(!(20 <= profile.weight && profile.weight <= 120)) {
+        throw std::runtime_error("WEIGHT_NOT_IN_RANGE");
+    }
+    profiles.insert({ name, profile });
+}
+

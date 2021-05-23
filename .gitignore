@@ -22,6 +22,9 @@
 Thumbs.db
 .vscode/settings.json
 
+# Profiles
+profiles.csv
+
 # Frontend
 /frontend/node_modules
 frontend/.env

@@ -41,6 +41,13 @@ typedef struct WaterQuality
     double color; //15 - 30
 } WaterQuality;
 
+typedef struct UserProfile {
+    string name;
+    double weight; // 20 - 120 kg
+    double preferredBathTemperature;
+    double preferredShowerTemperature;
+} UserProfile;
+
 // Singleton class 
 class SmartBath {
 private:
@@ -63,6 +70,10 @@ private:
 
     // Specifies if bath filling target is set
     bool isFillTargetSet = false;
+
+
+    // Map from User name to User Profile
+    unordered_map<string, UserProfile> profiles;
 
     // Specifies the target volume to fill the bathtub (in liters)
     double fillTarget;
@@ -98,6 +109,8 @@ private:
     
     void sendMessage(string topic, string message);
 
+    void loadProfiles();
+    void dumpProfiles();
 public:
     // Static method for getting the singleton instance.
     static SmartBath* getInstance();
@@ -148,4 +161,6 @@ public:
      * @param on Specify if the stopper should be on or off. 
     */
     void toggleStopper(bool on);
+
+    void addProfile(string name, UserProfile profile);
 };
