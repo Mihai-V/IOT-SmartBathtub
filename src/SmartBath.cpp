@@ -357,7 +357,6 @@ void SmartBath::loadProfiles() {
             double preferredBathTemperature = stod(splitted[2]);
             double preferredShowerTemperature = stod(splitted[3]);
             UserProfile profile = {
-                .name = name,
                 .weight = weight,
                 .preferredBathTemperature = preferredBathTemperature,
                 .preferredShowerTemperature = preferredShowerTemperature
@@ -384,7 +383,7 @@ void SmartBath::dumpProfiles() {
 
 void SmartBath::addProfile(string name, UserProfile profile) {
     if(profiles.find(name) != profiles.end()) {
-        throw "PROFILE_ALREADY_EXISTS";
+        throw std::runtime_error("PROFILE_ALREADY_EXISTS");
     }
     if(!(MIN_WATER_TEMPERATURE <= profile.preferredBathTemperature && profile.preferredBathTemperature <= MAX_WATER_TEMPERATURE)) {
         throw std::runtime_error("TEMPERATURE_NOT_IN_RANGE");
