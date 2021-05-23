@@ -53,15 +53,14 @@ private:
         // Defining various endpoints
         Routes::Get(router, "/volume", Routes::bind(&BathEndpoint::getCurrentVolume, this));
         Routes::Get(router, "/:pipe/state", Routes::bind(&BathEndpoint::getPipeState, this));
-        // TODO: Make these post requests
-        Routes::Get(router, "/:pipe/off", Routes::bind(&BathEndpoint::setPipeStateOff, this));
-        Routes::Get(router, "/:pipe/on", Routes::bind(&BathEndpoint::setPipeStateOn, this));
-        Routes::Get(router, "/:pipe/on/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
-        Routes::Get(router, "/:pipe/on/:debit/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
-        Routes::Get(router, "/stopper/:on", Routes::bind(&BathEndpoint::toggleStopper, this));
-        Routes::Get(router, "/profiles/add/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::addProfile, this));
-        Routes::Get(router, "/profiles/edit/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::editProfile, this));
-        Routes::Get(router, "/profiles/remove/:name", Routes::bind(&BathEndpoint::removeProfile, this));
+        Routes::Post(router, "/:pipe/off", Routes::bind(&BathEndpoint::setPipeStateOff, this));
+        Routes::Post(router, "/:pipe/on", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Post(router, "/:pipe/on/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Post(router, "/:pipe/on/:debit/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Post(router, "/stopper/:on", Routes::bind(&BathEndpoint::toggleStopper, this));
+        Routes::Post(router, "/profiles/add/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::addProfile, this));
+        Routes::Post(router, "/profiles/edit/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::editProfile, this));
+        Routes::Post(router, "/profiles/remove/:name", Routes::bind(&BathEndpoint::removeProfile, this));
         Routes::Post(router, "/profiles/set/:name", Routes::bind(&BathEndpoint::setProfile, this));
         Routes::Get(router, "/profiles/get/:name", Routes::bind(&BathEndpoint::getProfile, this));
         Routes::Get(router, "/profiles/get-set", Routes::bind(&BathEndpoint::getProfileSet, this));
