@@ -152,12 +152,19 @@ public:
     double getBathtubCurrentVolume();
 
     /** 
-     * Prepare the bath for a person with a certain weight
-     * Throws runtime_error if bath is in preparation or the weight is too high
+     * Prepare the bath for a person with a certain weight.
+     * Throws runtime_error if bath is in preparation or the weight is too high.
+     * @returns The time in seconds until the target is reachead.
     */
-    void prepareBath(double weight, double temperature);
+    int prepareBath(double weight, double temperature);
 
-    void prepareBath(double weight);
+    int prepareBath(double weight);
+
+    /** 
+     * Prepare bath for the set profile.
+     * Throws runtime_error if there is no profile set.
+    */
+    int prepareBath();
 
     /** 
      * Toggle the water stopper.

@@ -322,7 +322,7 @@ bool SmartBath::checkWaterQuality(WaterQuality waterQuality) {
         && (15.0 <= waterQuality.color && waterQuality.color <= 30.0);
 }
 
-void SmartBath::prepareBath(double weight, double temperature) {
+int SmartBath::prepareBath(double weight, double temperature) {
     if(isFillTargetSet) {
         throw std::runtime_error("BATH_ALREADY_IN_PREPARATION");
     }
@@ -338,10 +338,19 @@ void SmartBath::prepareBath(double weight, double temperature) {
     fillTarget = _fillTarget;
     bathState = { .isOn = true, .temperature = temperature, .debit = MAX_BATH_DEBIT };
     blockingMutex.unlock();
+    return (_fillTarget - bathtubCurrentVolume) / MAX_BATH_DEBIT;
 }
 
-void SmartBath::prepareBath(double weight) {
-    prepareBath(weight, defaultTemperature);
+int SmartBath::prepareBath(double weight) {
+    return prepareBath(weight, defaultTemperature);
+}
+
+int SmartBath::prepareBath() {
+    if(profileSet == nullptr) {
+        blockingMutex.unlock();
+        throw std::runtime_error("No profile set.");
+    }
+    return prepareBath(profileSet->weight, profileSet->preferredBathTemperature);
 }
 
 void SmartBath::loadProfiles() {

@@ -65,6 +65,7 @@ private:
         Routes::Post(router, "/profiles/set/:name", Routes::bind(&BathEndpoint::setProfile, this));
         Routes::Get(router, "/profiles/get/:name", Routes::bind(&BathEndpoint::getProfile, this));
         Routes::Get(router, "/profiles/get-set", Routes::bind(&BathEndpoint::getProfileSet, this));
+        Routes::Post(router, "/prepare", Routes::bind(&BathEndpoint::prepareBathForProfile, this));
     }
 
 
@@ -280,6 +281,16 @@ private:
             response.send(Http::Code::Ok, "null", JSON_MIME);
         } else {
             response.send(Http::Code::Ok, profileToJson(*profile), JSON_MIME);
+        }
+    }
+
+    void prepareBathForProfile(const Rest::Request& request, Http::ResponseWriter response) {
+        try {
+            int seconds = bath->prepareBath();
+            response.send(Http::Code::Ok, "{\"readyAfter\": " + to_string(seconds) + " }", JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
         }
     }
 
