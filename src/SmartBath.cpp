@@ -35,9 +35,6 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
     double currentDebit = bath->showerState.debit + bath->bathState.debit;
 
     double volume = bath->bathtubCurrentVolume + currentDebit;
-    std::cout << "Current volume: " << volume << " liters\n";
-    auto msg = mqtt::make_message("display", "currentVolume/" + to_string(volume));
-    bath->mqtt_client->publish(msg);
     // If the stopper is not plugged, then substract the water that has drained
     if(!bath->isOnWaterStopper) {
         volume -= DRAIN_SPEED;
@@ -46,25 +43,31 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
         }
     }
     // If the bathtub is filling up turn off the pipes
-    if(volume >= bath->bathtubValume) {
+    if(volume >= bath->bathtubValume && (bath->bathState.isOn || bath->showerState.isOn)) {
         bath->bathtubCurrentVolume = bath->bathtubValume;
         // Turn off pipes
-        bath->showerState = { .isOn = false, .temperature = 0, .debit = 0, };
-        bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+        PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
+        bath->_setShowerState(state);
+        bath->_setBathState(state);
     } else {
         // else set the new volume
         bath->bathtubCurrentVolume = volume;
     }
 
+    // Inform volume value over MQTT
+    bath->sendMessage("display", "currentVolume/" + to_string(volume));
+
     if(bath->isSetWaterQuality && !SmartBath::checkWaterQuality(bath->waterQuality)) {
-        // Turn off pipes
-        bath->showerState = { .isOn = false, .temperature = 0, .debit = 0, };
-        bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+        PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
+        bath->_setShowerState(state);
+        bath->_setBathState(state);
     }
 
     // If target is reached turn off pipes
     if(bath->isFillTargetSet && bath->fillTarget <= bath->bathtubCurrentVolume) {
-        bath->bathState = { .isOn = false, .temperature = 0, .debit = 0, };
+        PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
+        bath->_setShowerState(state);
+        bath->_setBathState(state);
         bath->isFillTargetSet = false;
         // Notify with MQTT
         auto msg = mqtt::make_message("display", "targetReached");
