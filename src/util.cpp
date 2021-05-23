@@ -34,3 +34,11 @@ string pipeStateToJson(PipeState state) {
     stateResponse += "} ";
     return stateResponse;
 }
+
+string profileToJson(UserProfile profile) {
+    string stateResponse = "{\"weight\": " + to_string(profile.weight);
+    stateResponse += ", \"preferredBathTemperature\": " + to_string(profile.preferredBathTemperature);
+    stateResponse += ", \"preferredShowerTemperature\": " + to_string(profile.preferredShowerTemperature);
+    stateResponse += "} ";
+    return stateResponse;
+}

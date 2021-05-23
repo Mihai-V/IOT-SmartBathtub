@@ -42,7 +42,6 @@ typedef struct WaterQuality
 } WaterQuality;
 
 typedef struct UserProfile {
-    string name;
     double weight; // 20 - 120 kg
     double preferredBathTemperature;
     double preferredShowerTemperature;
