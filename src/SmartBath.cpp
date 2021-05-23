@@ -205,6 +205,10 @@ double SmartBath::getDefaultTemperature() {
     return defaultTemperature;
 }
 
+double SmartBath::getBathtubCurrentVolume() {
+    return bathtubCurrentVolume;
+}
+
 int SmartBath::listenForDevices(SmartBath** instance_ptr) {
     const vector<string> TOPICS { "temperature", "waterQuality", "salt", "display", "command" };
     const vector<int> QOS { 0, 0, 0, 0, 1 };

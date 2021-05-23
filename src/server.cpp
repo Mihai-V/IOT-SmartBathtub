@@ -51,6 +51,7 @@ private:
     void setupRoutes() {
         using namespace Rest;
         // Defining various endpoints
+        Routes::Get(router, "/volume", Routes::bind(&BathEndpoint::getCurrentVolume, this));
         Routes::Get(router, "/:pipe/state", Routes::bind(&BathEndpoint::getPipeState, this));
         // TODO: Make these post requests
         Routes::Get(router, "/:pipe/off", Routes::bind(&BathEndpoint::setPipeStateOff, this));
@@ -159,6 +160,11 @@ private:
         }
         
         response.send(Http::Code::Ok);
+    }
+
+    void getCurrentVolume(const Rest::Request& request, Http::ResponseWriter response) {
+        double volume = bath->getBathtubCurrentVolume();
+        response.send(Http::Code::Ok, "{\"currentVolume\": " + to_string(volume) + "}", JSON_MIME);
     }
 
     // Create the lock which prevents concurrent editing of the same variable

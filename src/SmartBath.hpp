@@ -131,6 +131,11 @@ public:
     double getDefaultTemperature();
 
     /** 
+     * Get the current volume of the bathtub.
+    */
+    double getBathtubCurrentVolume();
+
+    /** 
      * Prepare the bath for a person with a certain weight
      * Throws runtime_error if bath is in preparation or the weight is too high
     */
