@@ -66,6 +66,8 @@ private:
         Routes::Get(router, "/profiles/get/:name", Routes::bind(&BathEndpoint::getProfile, this));
         Routes::Get(router, "/profiles/get-set", Routes::bind(&BathEndpoint::getProfileSet, this));
         Routes::Post(router, "/prepare", Routes::bind(&BathEndpoint::prepareBathForProfile, this));
+        Routes::Post(router, "/prepare/:weight", Routes::bind(&BathEndpoint::prepareBath, this));
+        Routes::Post(router, "/prepare/:weight/:temperature", Routes::bind(&BathEndpoint::prepareBath, this));
     }
 
 
@@ -287,6 +289,32 @@ private:
     void prepareBathForProfile(const Rest::Request& request, Http::ResponseWriter response) {
         try {
             int seconds = bath->prepareBath();
+            response.send(Http::Code::Ok, "{\"readyAfter\": " + to_string(seconds) + " }", JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void prepareBath(const Rest::Request& request, Http::ResponseWriter response) {
+        double weight = request.param(":weight").as<double>();
+        double temperature;
+
+        // Try get temperature
+        try {
+            temperature = request.param(":temperature").as<double>();
+        } catch(std::runtime_error err) {
+            auto errorWhat = err.what();
+            if(strcmp(errorWhat, "Unknown parameter") == 0) { // If temperature is not set, set a default temperature
+                temperature = bath->getDefaultTemperature();
+            } else { // If there is another error, send Bad Request response
+                response.send(Http::Code::Bad_Request, "{\"error\": \"BAD_TEMPERATURE_FORMAT\"}", JSON_MIME);
+                return;
+            }
+        }
+
+        try {
+            int seconds = bath->prepareBath(weight, temperature);
             response.send(Http::Code::Ok, "{\"readyAfter\": " + to_string(seconds) + " }", JSON_MIME);
         } catch(runtime_error err) {
             auto errWhat = string(err.what());
