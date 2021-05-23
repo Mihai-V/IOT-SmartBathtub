@@ -23,3 +23,14 @@ vector<double> convertStringVector(vector<string>& stringVector) {
     }
     return result;
 }
+
+string pipeStateToJson(PipeState state) {
+    // Response to be sent
+    string stateResponse = "{\"isOn\": " + to_string(state.isOn);
+    if(state.isOn) {
+        stateResponse += ", \"temperature\": " + to_string(state.temperature);
+        stateResponse += ", \"debit\": " + to_string(state.debit);
+    }
+    stateResponse += "} ";
+    return stateResponse;
+}

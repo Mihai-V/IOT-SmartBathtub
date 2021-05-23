@@ -10,6 +10,7 @@
 #include <pistache/common.h>
 #include <signal.h>
 #include "SmartBath.cpp"
+#include "util.cpp"
 #include "env.hpp"
 
 using namespace std;
@@ -51,13 +52,16 @@ private:
         using namespace Rest;
         // Defining various endpoints
         Routes::Get(router, "/:pipe/state", Routes::bind(&BathEndpoint::getPipeState, this));
+        // TODO: Make these post requests
         Routes::Get(router, "/:pipe/off", Routes::bind(&BathEndpoint::setPipeStateOff, this));
         Routes::Get(router, "/:pipe/on", Routes::bind(&BathEndpoint::setPipeStateOn, this));
-        Routes::Get(router, "/:pipe/on/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
-        Routes::Get(router, "/:pipe/on/:temperature/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Get(router, "/:pipe/on/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Get(router, "/:pipe/on/:debit/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
     }
 
-    // Get the pipe state to on
+
+
+    // Get the pipe state
     void getPipeState(const Rest::Request& request, Http::ResponseWriter response) {
         Guard guard(bathLock);
         auto pipe = request.param(":pipe").as<std::string>();
@@ -76,12 +80,7 @@ private:
         }
 
         // Response to be sent
-        string stateResponse = "{\"isOn\": " + to_string(state.isOn);
-        if(state.isOn) {
-            stateResponse += ", \"temperature\": " + to_string(state.temperature);
-            stateResponse += ", \"debit\": " + to_string(state.debit);
-        }
-        stateResponse += "} ";
+        string stateResponse = pipeStateToJson(state);
         response.send(Http::Code::Ok, stateResponse, JSON_MIME);
     }
 
@@ -102,7 +101,7 @@ private:
         } catch(std::runtime_error err) {
             auto errorWhat = err.what();
             if(strcmp(errorWhat, "Unknown parameter") == 0) { // If temperature is not set, set a default temperature
-                temperature = 20;
+                temperature = bath->getDefaultTemperature();
             } else { // If there is another error, send Bad Request response
                 response.send(Http::Code::Bad_Request, "{\"error\": \"BAD_TEMPERATURE_FORMAT\"}", JSON_MIME);
                 return;
@@ -137,7 +136,8 @@ private:
             return;
         }
 
-        response.send(Http::Code::Ok);
+        string stateResponse = pipeStateToJson(state);
+        response.send(Http::Code::Ok, stateResponse, JSON_MIME);
     }
 
     // Turn off the pipe
