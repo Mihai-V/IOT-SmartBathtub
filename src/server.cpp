@@ -60,6 +60,8 @@ private:
         Routes::Get(router, "/:pipe/on/:debit/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
         Routes::Get(router, "/stopper/:on", Routes::bind(&BathEndpoint::toggleStopper, this));
         Routes::Get(router, "/profiles/add/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::addProfile, this));
+        Routes::Get(router, "/profiles/edit/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::editProfile, this));
+        Routes::Get(router, "/profiles/remove/:name/", Routes::bind(&BathEndpoint::removeProfile, this));
     }
 
 
@@ -204,6 +206,43 @@ private:
             bath->addProfile(name, profile);
             auto resp = profileToJson(profile);
             response.send(Http::Code::Ok, resp, JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void editProfile(const Rest::Request& request, Http::ResponseWriter response) {
+        string name;
+        double weight, bathTemp, showerTemp;
+        try {
+            name = request.param(":name").as<std::string>();
+            weight = stod(request.param(":weight").as<std::string>());
+            bathTemp = stod(request.param(":bathTemp").as<std::string>());
+            showerTemp = stod(request.param(":showerTemp").as<std::string>());
+        } catch(...) {
+            response.send(Http::Code::Bad_Request);
+        }
+        try {
+            UserProfile profile = {
+                .weight = weight,
+                .preferredBathTemperature = bathTemp,
+                .preferredShowerTemperature = showerTemp
+            };
+            bath->editProfile(name, profile);
+            auto resp = profileToJson(profile);
+            response.send(Http::Code::Ok, resp, JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void removeProfile(const Rest::Request& request, Http::ResponseWriter response) {
+        string name = request.param(":name").as<std::string>();
+        try {
+            bath->removeProfile(name);
+            response.send(Http::Code::Ok, "{\"success\": true }", JSON_MIME);
         } catch(runtime_error err) {
             auto errWhat = string(err.what());
             response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
