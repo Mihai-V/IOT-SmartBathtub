@@ -58,6 +58,7 @@ private:
         Routes::Get(router, "/:pipe/on", Routes::bind(&BathEndpoint::setPipeStateOn, this));
         Routes::Get(router, "/:pipe/on/:debit", Routes::bind(&BathEndpoint::setPipeStateOn, this));
         Routes::Get(router, "/:pipe/on/:debit/:temperature", Routes::bind(&BathEndpoint::setPipeStateOn, this));
+        Routes::Get(router, "/stopper/:on", Routes::bind(&BathEndpoint::toggleStopper, this));
     }
 
 
@@ -165,6 +166,21 @@ private:
     void getCurrentVolume(const Rest::Request& request, Http::ResponseWriter response) {
         double volume = bath->getBathtubCurrentVolume();
         response.send(Http::Code::Ok, "{\"currentVolume\": " + to_string(volume) + "}", JSON_MIME);
+    }
+
+    void toggleStopper(const Rest::Request& request, Http::ResponseWriter response) {
+        string on = request.param(":on").as<std::string>();
+        bool onBool;
+        if(on == "on") {
+            onBool = true;
+        } else if(on == "off") {
+            onBool = false;
+        } else {
+            response.send(Http::Code::Bad_Request);
+            return;
+        }
+        bath->toggleStopper(onBool);
+        response.send(Http::Code::Ok, "{\"stopper\": " + to_string(onBool) + "}", JSON_MIME);
     }
 
     // Create the lock which prevents concurrent editing of the same variable

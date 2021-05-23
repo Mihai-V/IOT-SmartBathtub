@@ -209,6 +209,12 @@ double SmartBath::getBathtubCurrentVolume() {
     return bathtubCurrentVolume;
 }
 
+void SmartBath::toggleStopper(bool on) {
+    blockingMutex.lock();
+    isOnWaterStopper = on;
+    blockingMutex.unlock();
+}
+
 int SmartBath::listenForDevices(SmartBath** instance_ptr) {
     const vector<string> TOPICS { "temperature", "waterQuality", "salt", "display", "command" };
     const vector<int> QOS { 0, 0, 0, 0, 1 };

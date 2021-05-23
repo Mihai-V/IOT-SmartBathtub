@@ -142,4 +142,10 @@ public:
     void prepareBath(double weight, double temperature);
 
     void prepareBath(double weight);
+
+    /** 
+     * Toggle the water stopper.
+     * @param on Specify if the stopper should be on or off. 
+    */
+    void toggleStopper(bool on);
 };
