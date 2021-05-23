@@ -381,10 +381,7 @@ void SmartBath::dumpProfiles() {
     profileFile.close();
 }
 
-void SmartBath::addProfile(string name, UserProfile profile) {
-    if(profiles.find(name) != profiles.end()) {
-        throw std::runtime_error("PROFILE_ALREADY_EXISTS");
-    }
+void SmartBath::_insertProfile(string name, UserProfile profile) {
     if(!(MIN_WATER_TEMPERATURE <= profile.preferredBathTemperature && profile.preferredBathTemperature <= MAX_WATER_TEMPERATURE)) {
         throw std::runtime_error("TEMPERATURE_NOT_IN_RANGE");
     }
@@ -394,6 +391,34 @@ void SmartBath::addProfile(string name, UserProfile profile) {
     if(!(20 <= profile.weight && profile.weight <= 120)) {
         throw std::runtime_error("WEIGHT_NOT_IN_RANGE");
     }
+    blockingMutex.lock();
     profiles.insert({ name, profile });
+    blockingMutex.unlock();
 }
+
+void SmartBath::addProfile(string name, UserProfile profile) {
+    if(profiles.find(name) != profiles.end()) {
+        throw std::runtime_error("PROFILE_ALREADY_EXISTS");
+    }
+    _insertProfile(name, profile);
+}
+
+void SmartBath::editProfile(string name, UserProfile profile) {
+    if(profiles.find(name) == profiles.end()) {
+        throw std::runtime_error("PROFILE_NOT_FOUND");
+    }
+    _insertProfile(name, profile);
+}
+
+void SmartBath::removeProfile(string name) {
+    blockingMutex.lock();
+    auto it = profiles.find(name);
+    if(it == profiles.end()) {
+        blockingMutex.unlock();
+        throw std::runtime_error("PROFILE_NOT_FOUND");
+    }
+    profiles.erase(it);
+    blockingMutex.unlock();
+}
+
 

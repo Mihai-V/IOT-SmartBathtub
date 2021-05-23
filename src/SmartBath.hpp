@@ -110,6 +110,8 @@ private:
 
     void loadProfiles();
     void dumpProfiles();
+    // Internal private function to check profile properties and insert into the map
+    void _insertProfile(string name, UserProfile profile);
 public:
     // Static method for getting the singleton instance.
     static SmartBath* getInstance();
@@ -162,4 +164,6 @@ public:
     void toggleStopper(bool on);
 
     void addProfile(string name, UserProfile profile);
+    void editProfile(string name, UserProfile profile);
+    void removeProfile(string name);
 };
