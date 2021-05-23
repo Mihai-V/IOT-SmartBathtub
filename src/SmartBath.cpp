@@ -201,6 +201,10 @@ void SmartBath::setDefaultTemperature(double temperature) {
     blockingMutex.unlock();
 }
 
+double SmartBath::getDefaultTemperature() {
+    return defaultTemperature;
+}
+
 int SmartBath::listenForDevices(SmartBath** instance_ptr) {
     const vector<string> TOPICS { "temperature", "waterQuality", "salt", "display", "command" };
     const vector<int> QOS { 0, 0, 0, 0, 1 };

@@ -126,6 +126,11 @@ public:
     void setDefaultTemperature(double temperature);
 
     /** 
+     * Get the default water temperature.
+    */
+    double getDefaultTemperature();
+
+    /** 
      * Prepare the bath for a person with a certain weight
      * Throws runtime_error if bath is in preparation or the weight is too high
     */
