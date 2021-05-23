@@ -421,4 +421,28 @@ void SmartBath::removeProfile(string name) {
     blockingMutex.unlock();
 }
 
+void SmartBath::setProfile(string name) {
+    blockingMutex.lock();
+    auto it = profiles.find(name);
+    if(it == profiles.end()) {
+        blockingMutex.unlock();
+        throw std::runtime_error("PROFILE_NOT_FOUND");
+    }
+    profileSet = &(it->second);
+    blockingMutex.unlock();
+}
 
+UserProfile SmartBath::getProfile(string name) {
+    blockingMutex.lock();
+    auto it = profiles.find(name);
+    if(it == profiles.end()) {
+        blockingMutex.unlock();
+        throw std::runtime_error("PROFILE_NOT_FOUND");
+    }
+    blockingMutex.unlock();
+    return it->second;
+}
+
+UserProfile* SmartBath::getProfileSet() {
+    return profileSet;
+}

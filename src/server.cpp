@@ -61,7 +61,10 @@ private:
         Routes::Get(router, "/stopper/:on", Routes::bind(&BathEndpoint::toggleStopper, this));
         Routes::Get(router, "/profiles/add/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::addProfile, this));
         Routes::Get(router, "/profiles/edit/:name/:weight/:bathTemp/:showerTemp", Routes::bind(&BathEndpoint::editProfile, this));
-        Routes::Get(router, "/profiles/remove/:name/", Routes::bind(&BathEndpoint::removeProfile, this));
+        Routes::Get(router, "/profiles/remove/:name", Routes::bind(&BathEndpoint::removeProfile, this));
+        Routes::Post(router, "/profiles/set/:name", Routes::bind(&BathEndpoint::setProfile, this));
+        Routes::Get(router, "/profiles/get/:name", Routes::bind(&BathEndpoint::getProfile, this));
+        Routes::Get(router, "/profiles/get-set", Routes::bind(&BathEndpoint::getProfileSet, this));
     }
 
 
@@ -246,6 +249,37 @@ private:
         } catch(runtime_error err) {
             auto errWhat = string(err.what());
             response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void setProfile(const Rest::Request& request, Http::ResponseWriter response) {
+        string name = request.param(":name").as<std::string>();
+        try {
+            bath->setProfile(name);
+            response.send(Http::Code::Ok, "{\"success\": true }", JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void getProfile(const Rest::Request& request, Http::ResponseWriter response) {
+        string name = request.param(":name").as<std::string>();
+        try {
+            auto profile = bath->getProfile(name);
+            response.send(Http::Code::Ok, profileToJson(profile), JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void getProfileSet(const Rest::Request& request, Http::ResponseWriter response) {
+        auto profile = bath->getProfileSet();
+        if(profile == nullptr) {
+            response.send(Http::Code::Ok, "null", JSON_MIME);
+        } else {
+            response.send(Http::Code::Ok, profileToJson(*profile), JSON_MIME);
         }
     }
 

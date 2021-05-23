@@ -73,6 +73,8 @@ private:
 
     // Map from User name to User Profile
     unordered_map<string, UserProfile> profiles;
+    // The profile that was set.
+    UserProfile* profileSet = nullptr;
 
     // Specifies the target volume to fill the bathtub (in liters)
     double fillTarget;
@@ -166,4 +168,7 @@ public:
     void addProfile(string name, UserProfile profile);
     void editProfile(string name, UserProfile profile);
     void removeProfile(string name);
+    void setProfile(string name);
+    UserProfile getProfile(string name);
+    UserProfile* getProfileSet();
 };
