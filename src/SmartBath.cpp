@@ -199,6 +199,7 @@ void SmartBath::setShowerState(PipeState state) {
 void SmartBath::sendMessage(string topic, string message) {
     auto msg = mqtt::make_message(topic, message);
     mqtt_client->publish(msg);
+    cout << "[Sent] " << topic << ": " << message << endl;
 }
 
 void SmartBath::setDefaultTemperature(double temperature) {
@@ -252,9 +253,9 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
 
 
 		while (true) {
+            bool messageRecognized = true;
             auto msg = cli.consume_message();
             if(!msg) break;
-            cout << "[Received] " << msg->get_topic() << ": " << msg->to_string() << endl;
             if(msg->get_topic() == string("temperature")) {
                 bath->setDefaultTemperature(stod(msg->to_string()));
             } else if(msg->get_topic() == string("waterQuality")) {
@@ -301,12 +302,19 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
                         } else if(splitted[1] == string("shower")) {
                             bath->setShowerState(state);
                         }
+                    } else {
+                        messageRecognized = false;
                     }
                 } catch(...) { }
             } else if(msg->get_topic() == string("command")) {
                 if(msg->to_string() == string("stop")) {
                     break;
                 }
+            } else {
+                messageRecognized = false;
+            }
+            if(messageRecognized) {
+                cout << "[Received] " << msg->get_topic() << ": " << msg->to_string() << endl;
             }
 		}
 

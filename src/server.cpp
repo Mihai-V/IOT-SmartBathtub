@@ -408,14 +408,7 @@ int main(int argc, char *argv[]) {
     // Code that waits for the shutdown sinal for the server
     int signal = 0;
     int status = sigwait(&signals, &signal);
-    if (status == 0)
-    {
-        std::cout << "received signal " << signal << std::endl;
-    }
-    else
-    {
-        std::cerr << "sigwait returns " << status << std::endl;
-    }
+    cout << "\nGoodbye.\n";
 
     stats.stop();
 }
