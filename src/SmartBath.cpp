@@ -117,7 +117,7 @@ bool SmartBath::setWaterQuality(WaterQuality waterQuality) {
     this->isSetWaterQuality = true;
     // Send water quality to display
     string msg = "waterQuality/";
-    msg += checkWaterQuality(waterQuality) ? "good" : "bad";
+    msg += to_string(checkWaterQuality(waterQuality));
     sendMessage("display", msg);
     blockingMutex.unlock();
     return true;
