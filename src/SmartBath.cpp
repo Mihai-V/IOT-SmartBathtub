@@ -266,6 +266,11 @@ int SmartBath::listenForDevices(SmartBath** instance_ptr) {
                     };
                     bath->setWaterQuality(waterQuality);
                 } catch(...) { }
+            } else if(msg->get_topic() == "salt") {
+                try {
+                    double saltQuantity = stod(msg->to_string());
+                    bath->setRemainingSaltQuantity(saltQuantity);
+                } catch(...) { }
             } else if(msg->get_topic() == string("display")) {
                 try {
                     string qualityString = msg->to_string();
@@ -454,4 +459,13 @@ UserProfile SmartBath::getProfile(string name) {
 
 UserProfile* SmartBath::getProfileSet() {
     return profileSet;
+}
+
+void SmartBath::setRemainingSaltQuantity(double quantity) {
+    if(!(0 <= quantity && quantity <= 1)) {
+        throw runtime_error("Value must be between 0 and 1.");
+    }
+    blockingMutex.lock();
+    remainingSaltQuantity = quantity;
+    blockingMutex.unlock();
 }

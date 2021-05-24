@@ -70,6 +70,11 @@ private:
     // Specifies if bath filling target is set
     bool isFillTargetSet = false;
 
+    bool isSaltPumpOn = false;
+
+    // Value from 0 to 1, representing how much salt is in the salt container. 
+    double remainingSaltQuantity = 0;
+
 
     // Map from User name to User Profile
     unordered_map<string, UserProfile> profiles;
@@ -114,6 +119,8 @@ private:
     void dumpProfiles();
     // Internal private function to check profile properties and insert into the map
     void _insertProfile(string name, UserProfile profile);
+
+    void setRemainingSaltQuantity(double quantity);
 public:
     // Static method for getting the singleton instance.
     static SmartBath* getInstance();
