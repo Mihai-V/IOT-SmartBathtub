@@ -337,8 +337,8 @@ int SmartBath::prepareBath(double weight, double temperature) {
     if(isFillTargetSet) {
         throw std::runtime_error("BATH_ALREADY_IN_PREPARATION");
     }
-    double _fillTarget = weight * (1 / HUMAN_BODY_DENSITY);
-    if(_fillTarget > bathtubValume) {
+    double _fillTarget = bathtubValume - weight * (1 / HUMAN_BODY_DENSITY);
+    if(_fillTarget < 0) {
         throw std::runtime_error("You're too fat man...");
     }
     if(_fillTarget <= bathtubCurrentVolume) {
