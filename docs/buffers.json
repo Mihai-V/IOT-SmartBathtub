@@ -1,10 +1,10 @@
 {
     "device-name": "Smartbath App",
     "device-type": "Bath",
-    "buffers-count": 9,
+    "buffers-count": 11,
     "input-buffers": {
         "1": {
-            "token-delimitators": "",
+            "token-delimitators": "/",
             "protocol": "HTTP",
             "prefix": "curl -XPOST 'http://127.0.0.1:9080/'",
             "buffer-tokens": [
@@ -43,7 +43,7 @@
             ]
         },
         "2": {
-            "token-delimitators": "",
+            "token-delimitators": "/",
             "protocol": "HTTP",
             "prefix": "curl -XPOST 'http://127.0.0.1:9080/stopper'",
             "buffer-tokens": [
@@ -263,6 +263,45 @@
                     "optional": true
                 }
             ]
+        },
+        "11": {
+            "token-delimitators": ",",
+            "protocol": "FILE",
+            "prefix": "", // Yet this is a description for every line of the file
+            "buffer-tokens": [
+                {
+                    "name": "Profile name",
+                    "description": "The name of the user that has the profile.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "\w*",
+                    "optional": false
+                },
+                {
+                    "name": "Weight",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "[2-9][0-9]|1[12][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred bath temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred shower temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                }
+            ]
         }
     },
     "output-buffers": {
@@ -320,11 +359,50 @@
             ]
         },
         "4": {
-            "token-delimitators": "/",
+            "token-delimitators": "",
             "protocol": "HTTP",
             "prefix": "mosquitto_sub -t display",
-            "buffer-tokens": [ //???
+            "buffer-tokens": [ 
             ]
-        }
+        },
+        "11": {
+            "token-delimitators": ",",
+            "protocol": "FILE",
+            "prefix": "", // Yet this is a description for every line of the file
+            "buffer-tokens": [
+                {
+                    "name": "Profile name",
+                    "description": "The name of the user that has the profile.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "\w*",
+                    "optional": false
+                },
+                {
+                    "name": "Weight",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "[2-9][0-9]|1[12][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred bath temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred shower temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                }
+            ]
+        },
     }
 }
