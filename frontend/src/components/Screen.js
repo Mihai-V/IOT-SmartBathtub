@@ -183,7 +183,7 @@ function Screen() {
                                 <div className="pipe-prop-text"
                                     style={{'position': 'absolute', 'right': '20px'}}
                                 >
-                                    {app.bath.temperature || 20}°C
+                                    {formatFloat((app.bath.temperature || 0))}°C
                                 </div> 
                                 <div className="pipe-prop-icon">
                                     <ThermometerHigh/>
@@ -225,7 +225,7 @@ function Screen() {
                                 <div className="pipe-prop-text"
                                     style={{'position': 'absolute', 'right': '20px'}}
                                 >
-                                    {app.shower.temperature || 20}°C
+                                    {formatFloat((app.shower.temperature || 0))}°C
                                 </div> 
                                 <div className="pipe-prop-icon">
                                     <ThermometerHigh/>
