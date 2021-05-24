@@ -54,6 +54,7 @@ You will need to Import the collection in your Postman app by clicking Import > 
 
 ## Report and Buffer Specification
  - [Raport de analiză](docs/Raport%20de%20analiza.pdf)
+ - [Raport de analiză inițial](https://github.com/Mihai-V/IOT-SmartBathtub/blob/8ff78d4ce360a81019b7aa33c578aeb31924f417/Raport%20de%20analiza.pdf) (commit 8ff78d4ce360a81019b7aa33c578aeb31924f417)
  - [Buffer specs](docs/buffers.json)
 
 # References
