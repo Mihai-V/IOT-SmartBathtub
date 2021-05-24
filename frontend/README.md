@@ -3,7 +3,7 @@
 To get started, go to the frontend folder and copy the environment example. 
 ```
 cd frontend
-cp .env .env.example
+cp .env.example .env
 ```
 Ensure it will be connected to the same MQTT server as the C++ main app.
 
