@@ -185,4 +185,13 @@ public:
     void setProfile(string name);
     UserProfile getProfile(string name);
     UserProfile* getProfileSet();
+    
+    /** 
+     * Toggle the salt pump.
+     * Throws runtime_error if current volume is < 25%.
+     * @param on Specify if the salt pump should be on or off.
+    */
+    void toggleSaltPump(bool on);
+
+    double getRemainingSaltQuantity();
 };

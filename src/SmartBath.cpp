@@ -47,6 +47,12 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
             volume = 0;
         }
     }
+
+    // Turn off salt pump is volume went lower than 25% or there is no more salt.
+    if(volume / bath->bathtubValume <= 0.25 || bath->remainingSaltQuantity == 0) {
+        bath->isSaltPumpOn = false;
+    }
+
     // If the bathtub is filling up turn off the pipes
     if(volume >= bath->bathtubValume && (bath->bathState.isOn || bath->showerState.isOn)) {
         bath->bathtubCurrentVolume = bath->bathtubValume;
@@ -60,7 +66,7 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
     }
 
     // Inform volume value over MQTT
-    bath->sendMessage("display", "currentVolume/" + to_string(volume));
+    bath->sendMessage("display", "currentVolume/" + to_string(bath->bathtubCurrentVolume));
 
     if(bath->isSetWaterQuality && !SmartBath::checkWaterQuality(bath->waterQuality)) {
         PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
@@ -468,4 +474,22 @@ void SmartBath::setRemainingSaltQuantity(double quantity) {
     blockingMutex.lock();
     remainingSaltQuantity = quantity;
     blockingMutex.unlock();
+}
+
+void SmartBath::toggleSaltPump(bool on) {
+    if(on) {
+        if(remainingSaltQuantity == 0) {
+            throw runtime_error("There is no more salt.");
+        }
+        if(bathtubCurrentVolume / bathtubValume < 0.25) {
+            throw runtime_error("Bathtub volume too low.");
+        }
+    }
+    blockingMutex.lock();
+    isSaltPumpOn = on;
+    blockingMutex.unlock();
+}
+
+double SmartBath::getRemainingSaltQuantity() {
+    return remainingSaltQuantity;
 }

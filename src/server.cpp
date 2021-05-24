@@ -67,6 +67,7 @@ private:
         Routes::Post(router, "/prepare", Routes::bind(&BathEndpoint::prepareBathForProfile, this));
         Routes::Post(router, "/prepare/:weight", Routes::bind(&BathEndpoint::prepareBath, this));
         Routes::Post(router, "/prepare/:weight/:temperature", Routes::bind(&BathEndpoint::prepareBath, this));
+        Routes::Post(router, "/salt/:on/", Routes::bind(&BathEndpoint::toggleSaltPump, this));
     }
 
 
@@ -316,6 +317,26 @@ private:
             int seconds = bath->prepareBath(weight, temperature);
             response.send(Http::Code::Ok, "{\"readyAfter\": " + to_string(seconds) + " }", JSON_MIME);
         } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
+
+    void toggleSaltPump(const Rest::Request& request, Http::ResponseWriter response) {
+        string on = request.param(":on").as<std::string>();
+        bool onBool;
+        if(on == "on") {
+            onBool = true;
+        } else if(on == "off") {
+            onBool = false;
+        } else {
+            response.send(Http::Code::Bad_Request);
+            return;
+        }
+        try {
+            bath->toggleSaltPump(onBool);
+            response.send(Http::Code::Ok, "{\"saltPump\": " + to_string(onBool) + "}", JSON_MIME);
+        } catch (runtime_error err) {
             auto errWhat = string(err.what());
             response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
         }
