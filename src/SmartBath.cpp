@@ -347,7 +347,9 @@ int SmartBath::prepareBath(double weight, double temperature) {
     blockingMutex.lock();
     isFillTargetSet = true;
     fillTarget = _fillTarget;
-    bathState = { .isOn = true, .temperature = temperature, .debit = MAX_BATH_DEBIT };
+    PipeState state = { .isOn = true, .temperature = temperature, .debit = MAX_BATH_DEBIT };
+    _setBathState(state);
+    isOnWaterStopper = true;
     blockingMutex.unlock();
     return (_fillTarget - bathtubCurrentVolume) / MAX_BATH_DEBIT;
 }
@@ -362,6 +364,20 @@ int SmartBath::prepareBath() {
         throw std::runtime_error("No profile set.");
     }
     return prepareBath(profileSet->weight, profileSet->preferredBathTemperature);
+}
+
+void SmartBath::cancelBathPreparation() {
+    blockingMutex.lock();
+    if(!isFillTargetSet) {
+        blockingMutex.unlock();
+        throw std::runtime_error("No preparation was ongoing.");
+    }
+    isFillTargetSet = false;
+    PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
+    _setBathState(state);
+    _setShowerState(state);
+    isOnWaterStopper = false;
+    blockingMutex.unlock();
 }
 
 void SmartBath::loadProfiles() {

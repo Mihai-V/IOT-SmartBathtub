@@ -173,6 +173,8 @@ public:
     */
     int prepareBath();
 
+    void cancelBathPreparation();
+
     /** 
      * Toggle the water stopper.
      * @param on Specify if the stopper should be on or off. 

@@ -65,6 +65,7 @@ private:
         Routes::Get(router, "/profiles/get/:name", Routes::bind(&BathEndpoint::getProfile, this));
         Routes::Get(router, "/profiles/get-set", Routes::bind(&BathEndpoint::getProfileSet, this));
         Routes::Post(router, "/prepare", Routes::bind(&BathEndpoint::prepareBathForProfile, this));
+        Routes::Post(router, "/cancel-prepare", Routes::bind(&BathEndpoint::cancelBathPreparation, this));
         Routes::Post(router, "/prepare/:weight", Routes::bind(&BathEndpoint::prepareBath, this));
         Routes::Post(router, "/prepare/:weight/:temperature", Routes::bind(&BathEndpoint::prepareBath, this));
         Routes::Post(router, "/salt/:on/", Routes::bind(&BathEndpoint::toggleSaltPump, this));
@@ -322,6 +323,15 @@ private:
         }
     }
 
+    void cancelBathPreparation(const Rest::Request& request, Http::ResponseWriter response) {
+        try {
+            bath->cancelBathPreparation();
+            response.send(Http::Code::Ok, "{\"success\": true }", JSON_MIME);
+        } catch(runtime_error err) {
+            auto errWhat = string(err.what());
+            response.send(Http::Code::Bad_Request, "{\"error\": \"" + errWhat + "\"}", JSON_MIME);
+        }
+    }
     void toggleSaltPump(const Rest::Request& request, Http::ResponseWriter response) {
         string on = request.param(":on").as<std::string>();
         bool onBool;
