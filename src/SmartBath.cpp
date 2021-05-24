@@ -68,7 +68,8 @@ int SmartBath::intervalCheck(SmartBath** instance_ptr) {
     // Inform volume value over MQTT
     bath->sendMessage("display", "currentVolume/" + to_string(bath->bathtubCurrentVolume));
 
-    if(bath->isSetWaterQuality && !SmartBath::checkWaterQuality(bath->waterQuality)) {
+    if(bath->isSetWaterQuality && !SmartBath::checkWaterQuality(bath->waterQuality) &&
+        (bath->bathState.isOn || bath->showerState.isOn)) {
         PipeState state = { .isOn = false, .temperature = 0, .debit = 0 };
         bath->_setShowerState(state);
         bath->_setBathState(state);
