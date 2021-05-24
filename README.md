@@ -51,3 +51,10 @@ We've made a frontend React app that uses web sockets to communicate with the Sm
 ## HTTP Requests
 We made a shared Postman collection that will help you play with the app.
 You will need to Import the collection in your Postman app by clicking Import > Link and pasting `https://www.postman.com/collections/a476e81cd402a7fd3314`.
+
+## Report and Buffer Specification
+ - [Raport de analiză](docs/Raport%20de%20analiza.pdf)
+ - [Buffer specs](docs/buffers.json)
+
+# References
+1. sciencing.com, "How to Calculate the Volume of a Person" (accessed 5/18/2021) - https://sciencing.com/calculate-volume-person-7853815.html
