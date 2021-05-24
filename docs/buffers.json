@@ -1,0 +1,207 @@
+{
+    "device-name": "Smartbath App",
+    "device-type": "Bath",
+    "buffers-count": 1,
+    "input-buffers": {
+        "1": {
+            "token-delimitators": "",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/'",
+            "buffer-tokens": [
+                {
+                    "name": "Bath pipe",
+                    "description": "Can be shower or bath.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "bath|shower",
+                    "optional": false
+                },
+                {
+                    "name": "State on/off",
+                    "description": "Specify if the pipe should be turned off or on.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "on|off", // Correct inputs will be: [defrost]
+                    "optional": false
+                },
+                {
+                    "name": "Debit",
+                    "description": "Debit of the pipe ranged 0 - 0.2",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "0\.([01][0-9]*)|2",
+                    "optional": true
+                },
+                {
+                    "name": "Temperature",
+                    "description": "Temperature ranged 5-50 degrees.",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                }
+            ]
+        },
+        "2": {
+            "token-delimitators": "",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/stopper'",
+            "buffer-tokens": [
+                {
+                    "name": "State on/off",
+                    "description": "Specify if the stopper should be turned off or on.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "on|off",
+                    "optional": false
+                }
+            ]
+        },
+        "3": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/profiles'",
+            "buffer-tokens": [
+                {
+                    "name": "CRUD Action",
+                    "description": "Can be add, edit, remove and 1 more action to set the preferred profile.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "add|edit|remove|set",
+                    "optional": false
+                },
+                {
+                    "name": "Name of the profile",
+                    "description": "",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "\w+",
+                    "optional": false
+                },
+                {
+                    "name": "Weight",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "[2-9][0-9]|1[12][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred bath temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Preferred shower temperature",
+                    "description": "",
+                    "token-type": "number",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                }
+            ]
+        },
+        "4": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/cancel-prepare'",
+            "buffer-tokens": [ ]
+        },
+        "5": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/prepare'",
+            "buffer-tokens": [
+                {
+                    "name": "Weight",
+                    "description": "Weight of the person",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "[2-9][0-9]|1[12][0-9]",
+                    "optional": true
+                },
+                {
+                    "name": "Temperature",
+                    "description": "Temperature of the water",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "50|[5-9]|[1-4][0-9]",
+                    "optional": true
+                }
+            ]
+        },
+        "6": {
+            "token-delimitators": "",
+            "protocol": "HTTP",
+            "prefix": "curl -XPOST 'http://127.0.0.1:9080/salt'",
+            "buffer-tokens": [
+                {
+                    "name": "State on/off",
+                    "description": "Specify if the salt pump should be turned off or on.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "on|off",
+                    "optional": false
+                }
+            ]
+        },
+    },
+    "output-buffers": {
+        "1": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XGET 'http://127.0.0.1:8080/'",
+            "buffer-tokens": [
+                {
+                    "name": "Pipe name",
+                    "description": "Can be shower or bath.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "bath|shower",
+                    "optional": false
+                },
+                {
+                    "name": "State",
+                    "description": "Parameter is fixed: `state`.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "state",
+                    "optional": true
+                }
+            ]
+        },
+        "2": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XGET 'http://127.0.0.1:8080/volume'",
+            "buffer-tokens": [
+            ]
+        },
+        "3": {
+            "token-delimitators": "/",
+            "protocol": "HTTP",
+            "prefix": "curl -XGET 'http://127.0.0.1:8080/profiles'",
+            "buffer-tokens": [
+                {
+                    "name": "Action",
+                    "description": "Can be get or get-set",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "get-set|get",
+                    "optional": false
+                },
+                {
+                    "name": "Profile name",
+                    "description": "Parameter is fixed: `state`.",
+                    "token-type": "string",
+                    "byte-size": 10,
+                    "regex-rule": "\w+",
+                    "optional": true
+                }
+            ]
+        }
+    }
+}
